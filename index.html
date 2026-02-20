@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jeffrey Harris</title>
+  <meta name="description" content="Energy analytics portfolio: simulations, models, and writing." />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <header class="container">
+    <div class="header">
+      <div>
+        <h1>Jeffrey Harris</h1>
+        <p class="subtitle">Energy analytics • modeling • market design</p>
+      </div>
+
+      <nav class="nav">
+        <a href="#projects">Projects</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>I build simple, explainable models for energy markets and policy.</h2>
+      <p>
+        This site hosts interactive simulations (no server) plus short write-ups.
+        Start with the projects below.
+      </p>
+      <div class="buttons">
+        <a class="button primary" href="#projects">View projects</a>
+        <a class="button" href="https://github.com/jeffrey-the-curious">GitHub</a>
+      </div>
+    </section>
+
+    <section id="projects">
+      <h3>Projects</h3>
+
+      <div class="grid">
+        <a class="card" href="simulations/battery-arbitrage/">
+          <div class="card-title">Battery arbitrage simulator</div>
+          <div class="card-text">Interactive Python-in-browser model (Pyodide). V0 coming soon.</div>
+          <div class="card-meta">Simulation</div>
+        </a>
+
+        <a class="card" href="simulations/allocation-mechanisms/">
+          <div class="card-title">Allocation mechanisms playground</div>
+          <div class="card-text">Deferred acceptance, top trading cycles, and more.</div>
+          <div class="card-meta">Simulation</div>
+        </a>
+
+        <a class="card" href="https://github.com/jeffrey-the-curious">
+          <div class="card-title">Modeling repos</div>
+          <div class="card-text">Code, notebooks, and reproducible analysis.</div>
+          <div class="card-meta">GitHub</div>
+        </a>
+      </div>
+
+      <p class="note">
+        Each card can link to a simulation page inside this repo, or to an external repo.
+      </p>
+    </section>
+
+    <section id="about">
+      <h3>About</h3>
+      <p>
+        I’m an engineer and MBA pivoting into energy analytics. I’m focused on utility / ISO market analysis,
+        storage economics, and market design—building models that are transparent and testable.
+      </p>
+    </section>
+
+    <section id="contact">
+      <h3>Contact</h3>
+      <ul class="contact">
+        <li>GitHub: <a href="https://github.com/jeffrey-the-curious">jeffrey-the-curious</a></li>
+        <!-- Add these when ready -->
+        <!-- <li>Email: <a href="mailto:you@example.com">you@example.com</a></li> -->
+        <!-- <li>LinkedIn: <a href="https://www.linkedin.com/in/YOURHANDLE/">YOURHANDLE</a></li> -->
+      </ul>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <span>© <span id="year"></span> Jeffrey Harris</span>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
