@@ -70,9 +70,13 @@ async function initPyodideOnce() {
   if (pyodideReady) return;
   document.getElementById("status").textContent = "Status: loading Pyodide (first run can take ~10–30s)...";
   pyodide = await loadPyodide();
+
+  // NEW: ensure numpy is available
+  document.getElementById("status").textContent = "Status: loading numpy...";
+  await pyodide.loadPackage(["numpy"]);
+
   pyodideReady = true;
 
-  // Load your python file into the environment
   const pyCode = await fetch("./main.py").then(r => r.text());
   await pyodide.runPythonAsync(pyCode);
 
