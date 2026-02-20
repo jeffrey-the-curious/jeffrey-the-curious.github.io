@@ -1,9 +1,116 @@
 <!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>Battery Arbitrage</title></head>
-  <body>
-    <h1>Battery arbitrage</h1>
-    <p>Coming soon: Python-in-browser (Pyodide) simulation.</p>
-    <p><a href="../../">Back to home</a></p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Battery Arbitrage (Pyodide)</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+
+<body>
+  <header class="container">
+    <div class="header">
+      <div>
+        <h1>Battery arbitrage</h1>
+        <p class="subtitle">Bare-bones simulator (Python in the browser)</p>
+      </div>
+      <nav class="nav">
+        <a href="../../">Home</a>
+        <a href="../">Simulations</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>Run a simple charge/discharge strategy against a synthetic 24-hour price shape.</h2>
+      <p>This is intentionally minimal: it’s meant to ship fast and iterate.</p>
+    </section>
+
+    <section>
+      <h3>Inputs</h3>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">Capacity (MWh)</div>
+          <input id="capacity_mwh" type="number" value="100" min="1" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+        </div>
+
+        <div class="card">
+          <div class="card-title">Power limit (MW)</div>
+          <input id="power_mw" type="number" value="50" min="1" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+        </div>
+
+        <div class="card">
+          <div class="card-title">Round-trip efficiency</div>
+          <input id="rte" type="number" value="0.9" min="0.1" max="1" step="0.01" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+        </div>
+      </div>
+
+      <div class="buttons" style="margin-top: 12px;">
+        <button class="button primary" id="runBtn">Run</button>
+        <button class="button" id="seedBtn">New random day</button>
+      </div>
+
+      <p class="note" id="status">Status: not loaded</p>
+    </section>
+
+    <section>
+      <h3>Results</h3>
+      <pre id="output" style="border:1px solid var(--border); border-radius: 14px; padding: 12px; background: var(--card); overflow:auto; min-height: 120px;"></pre>
+    </section>
+  </main>
+
+<script>
+let pyodideReady = false;
+let pyodide = null;
+let currentSeed = 1;
+
+async function initPyodideOnce() {
+  if (pyodideReady) return;
+  document.getElementById("status").textContent = "Status: loading Pyodide (first run can take ~10–30s)...";
+  pyodide = await loadPyodide();
+  pyodideReady = true;
+
+  // Load your python file into the environment
+  const pyCode = await fetch("./main.py").then(r => r.text());
+  await pyodide.runPythonAsync(pyCode);
+
+  document.getElementById("status").textContent = "Status: ready";
+}
+
+function getInputs() {
+  return {
+    capacity_mwh: Number(document.getElementById("capacity_mwh").value),
+    power_mw: Number(document.getElementById("power_mw").value),
+    rte: Number(document.getElementById("rte").value),
+    seed: currentSeed
+  };
+}
+
+async function runModel() {
+  await initPyodideOnce();
+  const inp = getInputs();
+
+  pyodide.globals.set("capacity_mwh", inp.capacity_mwh);
+  pyodide.globals.set("power_mw", inp.power_mw);
+  pyodide.globals.set("rte", inp.rte);
+  pyodide.globals.set("seed", inp.seed);
+
+  document.getElementById("status").textContent = "Status: running...";
+  const result = await pyodide.runPythonAsync(`run_battery_sim(capacity_mwh, power_mw, rte, seed)`);
+  document.getElementById("output").textContent = result;
+  document.getElementById("status").textContent = "Status: ready";
+}
+
+function newRandomDay() {
+  currentSeed = Math.floor(Math.random() * 1_000_000);
+  document.getElementById("status").textContent = `Status: seed set to ${currentSeed} (click Run)`;
+}
+
+document.getElementById("runBtn").addEventListener("click", runModel);
+document.getElementById("seedBtn").addEventListener("click", newRandomDay);
+</script>
+
+</body>
 </html>
