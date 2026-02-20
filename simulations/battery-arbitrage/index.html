@@ -25,7 +25,7 @@
   <main class="container">
     <section class="hero">
       <h2>Run a simple charge/discharge strategy against a synthetic 24-hour price shape.</h2>
-      <p>This is intentionally minimal: it’s meant to ship fast and iterate.</p>
+      <p>This is intentionally minimalist, and hopefully will gain complexity and usefullness with time.</p>
     </section>
 
     <section>
@@ -68,7 +68,7 @@ let currentSeed = 1;
 
 async function initPyodideOnce() {
   if (pyodideReady) return;
-  document.getElementById("status").textContent = "Status: loading Pyodide (first run can take ~10–30s)...";
+  document.getElementById("status").textContent = "Status: loading Pyodide (first run can take ~1-2 min)...";
   pyodide = await loadPyodide();
 
   // NEW: ensure numpy is available
