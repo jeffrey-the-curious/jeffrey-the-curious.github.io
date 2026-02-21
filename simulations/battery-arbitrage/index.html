@@ -6,6 +6,8 @@
   <title>Battery Arbitrage (Pyodide)</title>
   <link rel="stylesheet" href="../../assets/css/style.css" />
   <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+  <!-- plot graphic -->
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
 </head>
 
 <body>
@@ -25,7 +27,7 @@
   <main class="container">
     <section class="hero">
       <h2>Run a simple charge/discharge strategy against a synthetic 24-hour price shape.</h2>
-      <p>This is intentionally minimalist, and hopefully will gain complexity and usefullness with time.</p>
+      <p>This is intentionally minimalist, and hopefully will gain complexity and usefulness with time.</p>
     </section>
 
     <section>
@@ -57,6 +59,9 @@
 
     <section>
       <h3>Results</h3>
+      <!-- plot graphic -->
+      <div id="chart" style="border:1px solid var(--border); border-radius:14px; padding:12px; background: var(--card);"></div>
+      <!-- Results table -->
       <pre id="output" style="border:1px solid var(--border); border-radius: 14px; padding: 12px; background: var(--card); overflow:auto; min-height: 120px;"></pre>
     </section>
   </main>
@@ -102,8 +107,70 @@ async function runModel() {
   pyodide.globals.set("seed", inp.seed);
 
   document.getElementById("status").textContent = "Status: running...";
-  const result = await pyodide.runPythonAsync(`run_battery_sim(capacity_mwh, power_mw, rte, seed)`);
-  document.getElementById("output").textContent = result;
+  // changes for chart
+  const resultJson = await pyodide.runPythonAsync(`run_battery_sim(capacity_mwh, power_mw, rte, seed)`);
+  const data = JSON.parse(resultJson);
+
+  // Plot lines
+  const forecastTrace = {
+    x: data.hours,
+    y: data.forecast_prices,
+    mode: "lines",
+    name: "Forecast price",
+  };
+
+  const realizedTrace = {
+    x: data.hours,
+    y: data.realized_prices,
+    mode: "lines",
+    name: "Realized price",
+  };
+
+  // Horizontal threshold lines
+  const chargeLine = {
+    x: data.hours,
+    y: data.hours.map(() => data.charge_thr),
+    mode: "lines",
+    name: "Charge threshold",
+  };
+
+  const dischargeLine = {
+    x: data.hours,
+    y: data.hours.map(() => data.discharge_thr),
+    mode: "lines",
+    name: "Discharge threshold",
+  };
+
+  // Optional markers for actions
+  const chargeHours = data.rows.filter(r => r.action === "charge").map(r => r.h);
+  const chargePrices = data.rows.filter(r => r.action === "charge").map(r => r.price);
+  const dischargeHours = data.rows.filter(r => r.action === "discharge").map(r => r.h);
+  const dischargePrices = data.rows.filter(r => r.action === "discharge").map(r => r.price);
+
+  const chargeMarkers = {
+    x: chargeHours,
+    y: chargePrices,
+    mode: "markers",
+    name: "Charge hours",
+  };
+
+  const dischargeMarkers = {
+    x: dischargeHours,
+    y: dischargePrices,
+    mode: "markers",
+    name: "Discharge hours",
+  };
+
+  Plotly.newPlot("chart", [forecastTrace, realizedTrace, chargeLine, dischargeLine, chargeMarkers, dischargeMarkers], {
+    margin: { t: 10, r: 10, b: 40, l: 50 },
+    xaxis: { title: "Hour", dtick: 1 },
+    yaxis: { title: "$/MWh" },
+    legend: { orientation: "h" },
+  });
+
+  // Keep a simple text output too
+  document.getElementById("output").textContent =
+    `Profit (toy): $${data.profit.toFixed(2)}\nCharge thr: ${data.charge_thr.toFixed(2)}\nDischarge thr: ${data.discharge_thr.toFixed(2)}`;
   document.getElementById("status").textContent = "Status: ready";
 }
 
