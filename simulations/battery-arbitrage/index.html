@@ -172,7 +172,11 @@ async function runModel() {
       margin: { t: 10, r: 10, b: 40, l: 50 },
       xaxis: { title: "Hour", dtick: 1 },
       yaxis: { title: "$/MWh" },
-      legend: { orientation: "h" },
+      legend: {
+        orientation: "h",
+        y: 1.15,      // move legend above plot
+        x: 0,
+      },
     },
     { responsive: true }
   );
