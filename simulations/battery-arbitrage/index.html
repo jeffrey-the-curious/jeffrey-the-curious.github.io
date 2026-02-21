@@ -60,7 +60,10 @@
     <section>
       <h3>Results</h3>
       <!-- plot graphic -->
-      <div id="chart" style="border:1px solid var(--border); border-radius:14px; padding:12px; background: var(--card);"></div>
+      <div
+        style="border:1px solid var(--border); border-radius:14px; background: var(--card); padding:12px;">
+        <div id="chart" style="height:380px;"></div>
+      </div>
       <!-- Results table -->
       <pre id="output" style="border:1px solid var(--border); border-radius: 14px; padding: 12px; background: var(--card); overflow:auto; min-height: 120px;"></pre>
     </section>
@@ -161,12 +164,18 @@ async function runModel() {
     name: "Discharge hours",
   };
 
-  Plotly.newPlot("chart", [forecastTrace, realizedTrace, chargeLine, dischargeLine, chargeMarkers, dischargeMarkers], {
-    margin: { t: 10, r: 10, b: 40, l: 50 },
-    xaxis: { title: "Hour", dtick: 1 },
-    yaxis: { title: "$/MWh" },
-    legend: { orientation: "h" },
-  });
+  Plotly.newPlot(
+    "chart",
+    [forecastTrace, realizedTrace, chargeLine, dischargeLine, chargeMarkers, dischargeMarkers],
+    {
+      height: 380,
+      margin: { t: 10, r: 10, b: 40, l: 50 },
+      xaxis: { title: "Hour", dtick: 1 },
+      yaxis: { title: "$/MWh" },
+      legend: { orientation: "h" },
+    },
+    { responsive: true }
+  );
 
   // Keep a simple text output too
   document.getElementById("output").textContent =
