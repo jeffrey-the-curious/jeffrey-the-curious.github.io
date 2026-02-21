@@ -1,5 +1,8 @@
+# imports: numpy for calcs, json for chart
 import numpy as np
+import json
 
+# main function, inputs from GUI, returns table
 def run_battery_sim(capacity_mwh: float, power_mw: float, rte: float, seed: int) -> str:
     """
     Bare-bones arbitrage sim:
@@ -42,6 +45,7 @@ def run_battery_sim(capacity_mwh: float, power_mw: float, rte: float, seed: int)
     soc = 0.0  # state of charge in MWh
     profit = 0.0
 
+    # Simulation by hour
     rows = []
     for h, p in enumerate(realized_prices):
         action = "idle"
@@ -66,15 +70,24 @@ def run_battery_sim(capacity_mwh: float, power_mw: float, rte: float, seed: int)
 
         rows.append((h, float(p), action, soc, charge_mwh, discharge_mwh))
 
-    # Format output as plain text (easy MVP)
-    out = []
-    out.append(f"Inputs: capacity={capacity_mwh:.1f} MWh, power={power_mw:.1f} MW, RTE={rte:.2f}, seed={seed}")
-    out.append(f"Thresholds: charge<= {charge_thr:.2f}, discharge>= {discharge_thr:.2f}")
-    out.append(f"Total profit (toy): ${profit:,.2f}")
-    out.append("")
-    out.append("hr | price | action     | SOC(MWh) | chg(MWh) | dis(MWh)")
-    out.append("---|-------|------------|----------|----------|---------")
-    for h, p, action, soc, chg, dis in rows:
-        out.append(f"{h:>2} | {p:>5.1f} | {action:<10} | {soc:>8.1f} | {chg:>8.1f} | {dis:>7.1f}")
-
-    return "\n".join(out)
+    # Format output
+        payload = {
+        "hours": hours.tolist(),
+        "forecast_prices": forecast_prices.tolist(),
+        "realized_prices": realized_prices.tolist(),
+        "charge_thr": float(charge_thr),
+        "discharge_thr": float(discharge_thr),
+        "profit": float(profit),
+        "rows": [
+            {
+                "h": int(h),
+                "price": float(p),
+                "action": str(action),
+                "soc": float(soc),
+                "chg": float(chg),
+                "dis": float(dis),
+            }
+            for (h, p, action, soc, chg, dis) in rows
+        ],
+    }
+    return json.dumps(payload)
