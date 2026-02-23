@@ -1,8 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Battery Arbitrage — Part 2: Optimization</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+</head>
 
+<body>
+  <header class="container">
+    <nav class="series-nav">
+      <a href="./01-simple-model.html">← Prev: Simple model</a>
+      <span> | </span>
+      <a href="./index.html">Series home</a>
+      <span> | </span>
+      <span style="opacity: 0.7;">Next: (coming soon)</span>
+    </nav>
 
+    <div class="header">
+      <div>
+        <h1>Battery arbitrage</h1>
+        <p class="subtitle">Part 2 — Optimization with forecasts</p>
+      </div>
+      <nav class="nav">
+        <a href="../../">Home</a>
+        <a href="../">Simulations</a>
+      </nav>
+    </div>
+  </header>
 
-<nav class="series-nav">
-  <a href="./01-simple-model.html">← Prev</a>
-  <span> | </span>
-  <a href="./index.html">Series home</a>
-</nav>
+  <main class="container">
+    <section class="hero">
+      <h2>What changes in Part 2?</h2>
+      <p>
+        Part 1 used a simple threshold rule on a single day of prices.
+        Here, we’ll <strong>choose the charging and discharging decisions optimally</strong>,
+        using a price forecast (and later: uncertainty).
+      </p>
+    </section>
+
+    <section>
+      <h3>Goal</h3>
+      <div class="card">
+        <p>
+          Given a forecast of prices over time, decide how much to charge/discharge each hour
+          to maximize profit, while respecting the battery’s physical constraints.
+        </p>
+        <ul>
+          <li><strong>Inputs:</strong> forecast prices, capacity, power limit, efficiency</li>
+          <li><strong>Decision:</strong> charge/discharge schedule (hour-by-hour)</li>
+          <li><strong>Output:</strong> profit + state of charge over time</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h3>What we’re optimizing (conceptually)</h3>
+      <div class="card">
+        <p style="margin-top:0;">
+          We will set up an objective like:
+        </p>
+        <pre style="border:1px solid var(--border); border-radius: 14px; padding: 12px; background: var(--card); overflow:auto;">
+maximize   Σ_t ( price_t * discharge_t  -  price_t * charge_t )
+subject to state-of-charge constraints, power limits, and efficiency
+        </pre>
+        <p class="note">
+          This is a placeholder: we’ll write the full math carefully before coding.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h3>Planned build steps</h3>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">Step A — Deterministic optimization</div>
+          <p>Assume the forecast is perfect; solve for the best charge/discharge plan.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Step B — Forecast error</div>
+          <p>Introduce forecast vs realized prices; evaluate how much value errors destroy.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Step C — Policy / thresholds</div>
+          <p>Compare “optimized schedule” vs “simple thresholds” as a robust heuristic.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Status</h3>
+      <div class="card">
+        <p style="margin-top:0;">
+          This page is currently a placeholder. Next up:
+        </p>
+        <ul>
+          <li>Write the variables + constraints explicitly (state of charge evolution)</li>
+          <li>Pick an approach: linear programming vs dynamic programming</li>
+          <li>Implement a first working solver (even if it’s simple)</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <p class="note">
+        Back to <a href="./01-simple-model.html">Part 1</a> or <a href="./index.html">series home</a>.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
