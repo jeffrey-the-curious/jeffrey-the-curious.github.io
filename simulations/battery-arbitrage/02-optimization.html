@@ -34,7 +34,7 @@
       <h2>What changes in Part 2?</h2>
       <p>
         Part 1 used a simple threshold rule on a single day of prices.
-        Here, we’ll <strong>choose the charging and discharging decisions optimally</strong>,
+        Here, we’ll <strong>choose the charging and discharging decisions to optimize gross margin</strong>,
         using a price forecast (and later: uncertainty).
       </p>
     </section>
@@ -44,7 +44,7 @@
       <div class="card">
         <p>
           Given a forecast of prices over time, decide how much to charge/discharge each hour
-          to maximize profit, while respecting the battery’s physical constraints.
+          to maximize gross margin, while respecting the battery’s physical constraints.
         </p>
         <ul>
           <li><strong>Inputs:</strong> forecast prices, capacity, power limit, efficiency</li>
@@ -58,14 +58,14 @@
       <h3>What we’re optimizing (conceptually)</h3>
       <div class="card">
         <p style="margin-top:0;">
-          We will set up an objective like:
+          Optimization function: gross margin over time period
         </p>
         <pre style="border:1px solid var(--border); border-radius: 14px; padding: 12px; background: var(--card); overflow:auto;">
-maximize   Σ_t ( price_t * discharge_t  -  price_t * charge_t )
-subject to state-of-charge constraints, power limits, and efficiency
+argmax gross margin =  Σ_t ( price_t * discharge_t  -  price_t * charge_t )
+subject to state-of-charge, power limits, and efficiency
         </pre>
         <p class="note">
-          This is a placeholder: we’ll write the full math carefully before coding.
+          This is a placeholder.
         </p>
       </div>
     </section>
@@ -75,15 +75,15 @@ subject to state-of-charge constraints, power limits, and efficiency
       <div class="grid">
         <div class="card">
           <div class="card-title">Step A — Deterministic optimization</div>
-          <p>Assume the forecast is perfect; solve for the best charge/discharge plan.</p>
+          <p>Assume the forecast is perfect; solve for the optimal charge/discharge strategy.</p>
         </div>
         <div class="card">
           <div class="card-title">Step B — Forecast error</div>
-          <p>Introduce forecast vs realized prices; evaluate how much value errors destroy.</p>
+          <p>Introduce forecast vs realized prices (random noise error) and show the subsequent changes to strategy.</p>
         </div>
         <div class="card">
-          <div class="card-title">Step C — Policy / thresholds</div>
-          <p>Compare “optimized schedule” vs “simple thresholds” as a robust heuristic.</p>
+          <div class="card-title">Step C — Project Finance</div>
+          <p>Show how getting a project funded depends on more than optimized net income.</p>
         </div>
       </div>
     </section>
@@ -96,8 +96,8 @@ subject to state-of-charge constraints, power limits, and efficiency
         </p>
         <ul>
           <li>Write the variables + constraints explicitly (state of charge evolution)</li>
-          <li>Pick an approach: linear programming vs dynamic programming</li>
-          <li>Implement a first working solver (even if it’s simple)</li>
+          <li>Dynamic programming</li>
+          <li>Implement a working solver</li>
         </ul>
       </div>
     </section>
