@@ -120,7 +120,8 @@ async function runModel() {
   await initPyodideOnce();
   const inp = getInputs();
 
-  pyodide.globals.set("capacity_mwh", inp.capacity_mwh);
+  pyodide.globals.set("charge_thr_pct", inp.charge_thr_pct);
+  pyodide.globals.set("discharge_thr_pct", inp.discharge_thr_pct);
   pyodide.globals.set("power_mw", inp.power_mw);
   pyodide.globals.set("rte", inp.rte);
   pyodide.globals.set("seed", inp.seed);
