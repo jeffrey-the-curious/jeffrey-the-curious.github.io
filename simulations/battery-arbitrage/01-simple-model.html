@@ -128,7 +128,7 @@ async function runModel() {
 
   document.getElementById("status").textContent = "Status: running...";
   // changes for chart
-  const resultJson = await pyodide.runPythonAsync(`run_battery_sim(capacity_mwh, power_mw, rte, seed)`);
+  const resultJson = await pyodide.runPythonAsync(`run_battery_sim(charge_thr_pct, discharge_thr_pct, power_mw, rte, seed)`);
   const data = JSON.parse(resultJson);
 
   // Plot lines
