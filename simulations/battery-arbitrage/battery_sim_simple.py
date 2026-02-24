@@ -3,43 +3,45 @@ import numpy as np
 import json
 
 # main function, inputs from GUI, returns table
-def run_battery_sim(capacity_mwh: float, power_mw: float, rte: float, seed: int) -> str:
+def run_battery_sim(charge_thr_pct: float, discharge_thr_pct: float, power_mw: float, rte: float, seed: int) -> str:
     """
     Bare-bones arbitrage sim:
     - 24 hourly prices (synthetic)
-    - charge below 30th percentile, discharge above 70th percentile
-    - enforce capacity + power limits
+    - user sets the charge and discharge percentile (strategy)
+    - enforce power limits
     - simple efficiency: when discharging, delivered energy = discharged_energy * rte
     """
     rng = np.random.default_rng(int(seed))
 
+    # Storage facility capacity in MWh
+    capacity_mwh = 100
+
     # Synthetic day-ahead-ish price shape: baseline + evening peak + random noise
     hours = np.arange(24)
     # Daily wave baseline shape
-    base = 45 + 10*np.sin((hours - 7) * np.pi / 12)
+    base = 45 + 10*np.sin((hours - 5) * np.pi / 12)
     # Add evening peak function
     peak_height = 20
-    peak_center = 18
-    peak_sigma = 3  # hours
+    peak_center = 16
+    peak_sigma = 2.5  # hours
     evening_peak = peak_height * np.exp(
         -((hours - peak_center)**2) / (2 * peak_sigma**2)
     )
     # Add noise, maybe later add acute event impact
     noise = rng.normal(0, 6, size=24)
 
-    # Price section
+    # Price section and limits
     p_floor = -20
     p_ceiling = None
     # Forecast prices
     forecast_prices = base + evening_peak
-    realized_prices = np.clip(forecast_prices + noise, a_min=p_floor, a_max=p_ceiling)
 
     # Realized prices
     realized_prices = np.clip(forecast_prices + noise, a_min=p_floor, a_max=p_ceiling)
 
     # charge and discharge thresholds
-    charge_thr = np.percentile(forecast_prices, 30)
-    discharge_thr = np.percentile(forecast_prices, 70)
+    charge_thr = np.percentile(forecast_prices, charge_thr_pct)
+    discharge_thr = np.percentile(forecast_prices, discharge_thr_pct)
 
     # init state of charge in MWh
     soc = 0.0  # state of charge in MWh
@@ -71,7 +73,7 @@ def run_battery_sim(capacity_mwh: float, power_mw: float, rte: float, seed: int)
         rows.append((h, float(p), action, soc, charge_mwh, discharge_mwh))
 
     # Format output
-        payload = {
+    payload = {
         "hours": hours.tolist(),
         "forecast_prices": forecast_prices.tolist(),
         "realized_prices": realized_prices.tolist(),

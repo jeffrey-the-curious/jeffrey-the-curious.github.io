@@ -86,7 +86,7 @@ let currentSeed = 1;
 
 async function initPyodideOnce() {
   if (pyodideReady) return;
-  document.getElementById("status").textContent = "Status: loading Pyodide (first run can take ~1-2 min)...";
+  document.getElementById("status").textContent = "Status: loading Pyodide (first run can take upt to 1 min)...";
   pyodide = await loadPyodide();
 
   // NEW: ensures numpy is available
@@ -95,7 +95,7 @@ async function initPyodideOnce() {
 
   pyodideReady = true;
 
-  const pyCode = await fetch("./main.py").then(r => r.text());
+  const pyCode = await fetch("./battery_sim_simple.py").then(r => r.text());
   await pyodide.runPythonAsync(pyCode);
 
   document.getElementById("status").textContent = "Status: ready";
