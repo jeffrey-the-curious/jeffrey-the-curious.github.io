@@ -44,8 +44,13 @@
       <h3>Inputs</h3>
       <div class="grid">
         <div class="card">
-          <div class="card-title">Capacity (MWh)</div>
-          <input id="capacity_mwh" type="number" value="100" min="1" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+          <div class="card-title">Charge Threshold (%)</div>
+          <input id="charge_thr_pct" type="number" value="30" min="1" max="99" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+        </div>
+
+        <div class="card">
+          <div class="card-title">Discharge Threshold (%)</div>
+          <input id="discharge_thr_pct" type="number" value="70" min="1" max="99" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
         </div>
 
         <div class="card">
@@ -103,7 +108,8 @@ async function initPyodideOnce() {
 
 function getInputs() {
   return {
-    capacity_mwh: Number(document.getElementById("capacity_mwh").value),
+    charge_thr_pct: Number(document.getElementById("charge_thr_pct").value),
+    discharge_thr_pct: Number(document.getElementById("discharge_thr_pct").value),
     power_mw: Number(document.getElementById("power_mw").value),
     rte: Number(document.getElementById("rte").value),
     seed: currentSeed
