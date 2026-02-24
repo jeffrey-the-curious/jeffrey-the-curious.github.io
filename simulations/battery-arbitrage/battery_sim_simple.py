@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 # main function, inputs from GUI, returns table
-def run_battery_sim(charge_thr_pct: float, discharge_thr_pct: float, rte: float, seed: int) -> str:
+def run_battery_sim(charge_thr_pct: float, discharge_thr_pct: float, power_mw: float, rte: float, seed: int) -> str:
     """
     Bare-bones arbitrage sim:
     - 24 hourly prices (synthetic)
