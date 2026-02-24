@@ -19,10 +19,10 @@ def run_battery_sim(charge_thr_pct: float, discharge_thr_pct: float, power_mw: f
     # Synthetic day-ahead-ish price shape: baseline + evening peak + random noise
     hours = np.arange(24)
     # Daily wave baseline shape
-    base = 45 + 10*np.sin((hours - 5) * np.pi / 12)
+    base = 45 + 10*np.sin((hours - 9) * np.pi / 12)
     # Add evening peak function
     peak_height = 20
-    peak_center = 16
+    peak_center = 20
     peak_sigma = 2.5  # hours
     evening_peak = peak_height * np.exp(
         -((hours - peak_center)**2) / (2 * peak_sigma**2)
