@@ -19,6 +19,7 @@
       <a href="./02-optimization.html">Next →</a>
     </nav>
 
+
     <div class="header">
       <div>
         <h1>Battery arbitrage</h1>
@@ -46,23 +47,23 @@
       <h3>Inputs</h3>
       <div class="grid">
         <div class="card">
-          <div class="card-title">Charge Threshold (%)</div>
-          <input id="charge_thr_pct" type="number" value="30" min="1" max="99" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+          <label class="card-title" for="charge_thr_pct">Charge Threshold (%)</label>
+          <input id="charge_thr_pct" class="input-field" type="number" value="30" min="1" max="99" step="1">
         </div>
 
         <div class="card">
-          <div class="card-title">Discharge Threshold (%)</div>
-          <input id="discharge_thr_pct" type="number" value="70" min="1" max="99" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+          <label class="card-title" for="discharge_thr_pct">Discharge Threshold (%)</label>
+          <input id="discharge_thr_pct" class="input-field" type="number" value="70" min="1" max="99" step="1">
         </div>
 
         <div class="card">
-          <div class="card-title">Power limit (MW)</div>
-          <input id="power_mw" type="number" value="25" min="1" step="1" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+          <label class="card-title" for="power_mw">Power limit (MW)</label>
+          <input id="power_mw" class="input-field" type="number" value="25" min="1" step="1">
         </div>
 
         <div class="card">
-          <div class="card-title">Round-trip efficiency</div>
-          <input id="rte" type="number" value="0.9" min="0.1" max="1" step="0.01" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px;">
+          <label class="card-title" for="rte">Round-trip efficiency</label>
+          <input id="rte" class="input-field" type="number" value="0.9" min="0.1" max="1" step="0.01">
         </div>
       </div>
 
@@ -76,13 +77,10 @@
 
     <section>
       <h3>Results</h3>
-      <!-- plot graphic -->
-      <div
-        style="border:1px solid var(--border); border-radius:14px; background: var(--card); padding:12px;">
+      <div class="chart-container">
         <div id="chart" style="height:380px;"></div>
       </div>
-      <!-- Results table -->
-      <pre id="output" style="border:1px solid var(--border); border-radius: 14px; padding: 12px; background: var(--card); overflow:auto; min-height: 120px;"></pre>
+      <pre id="output" class="output-box"></pre>
     </section>
   </main>
 
@@ -93,19 +91,24 @@ let currentSeed = 1;
 
 async function initPyodideOnce() {
   if (pyodideReady) return;
-  document.getElementById("status").textContent = "Status: loading Pyodide (first run can take upt to 1 min)...";
-  pyodide = await loadPyodide();
+  const statusEl = document.getElementById("status");
+  try {
+    statusEl.textContent = "Status: loading Pyodide (first run can take up to 1 min)...";
+    pyodide = await loadPyodide();
 
-  // NEW: ensures numpy is available
-  document.getElementById("status").textContent = "Status: loading numpy...";
-  await pyodide.loadPackage(["numpy"]);
+    statusEl.textContent = "Status: loading numpy...";
+    await pyodide.loadPackage(["numpy"]);
 
-  pyodideReady = true;
+    statusEl.textContent = "Status: loading simulation...";
+    const pyCode = await fetch("./battery_sim_simple.py").then(r => r.text());
+    await pyodide.runPythonAsync(pyCode);
 
-  const pyCode = await fetch("./battery_sim_simple.py").then(r => r.text());
-  await pyodide.runPythonAsync(pyCode);
-
-  document.getElementById("status").textContent = "Status: ready";
+    pyodideReady = true;
+    statusEl.textContent = "Status: ready";
+  } catch (err) {
+    statusEl.textContent = `Status: failed to load — ${err.message}`;
+    throw err;
+  }
 }
 
 function getInputs() {

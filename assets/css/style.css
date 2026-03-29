@@ -80,6 +80,48 @@ h3 { margin: 26px 0 12px; font-size: 18px; }
 
 .note { color: var(--muted); margin-top: 12px; }
 
+.input-field {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: inherit;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+}
+.input-field:focus {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+.series-nav {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: var(--muted);
+}
+.series-nav a {
+  color: var(--text);
+  text-decoration: none;
+}
+.series-nav a:hover { text-decoration: underline; }
+
+.chart-container {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 12px;
+}
+
+.output-box {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--card);
+  overflow: auto;
+  min-height: 120px;
+}
+
 .contact { margin: 0; padding-left: 18px; }
 .footer {
   border-top: 1px solid var(--border);
