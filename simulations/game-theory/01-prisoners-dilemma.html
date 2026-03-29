@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Repeated Prisoner's Dilemma</title>
+  <meta name="description" content="Interactive repeated prisoner's dilemma simulation for teaching strategic behavior and cooperation." />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+</head>
+
+<body>
+  <header class="container">
+
+    <nav class="series-nav">
+      <a href="./index.html">← Series home</a>
+    </nav>
+
+    <div class="header">
+      <div>
+        <h1>Repeated prisoner's dilemma</h1>
+        <p class="subtitle">Explore how cooperation emerges (or doesn't) when two players meet repeatedly</p>
+      </div>
+      <nav class="nav">
+        <a href="../../">Home</a>
+        <a href="../">Simulations</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>Two players. Each round: cooperate or defect. What strategy wins?</h2>
+      <p>
+        In a single game, defection is always the rational choice — but in a repeated game,
+        the calculus changes. Pick strategies for both players and run the simulation to see
+        who accumulates more points, and why.
+      </p>
+    </section>
+
+    <section>
+      <h3>The payoff matrix</h3>
+      <table class="payoff-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Player 2 cooperates</th>
+            <th>Player 2 defects</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Player 1 cooperates</strong></td>
+            <td class="payoff-mutual">3 , 3</td>
+            <td class="payoff-sucker">0 , 5</td>
+          </tr>
+          <tr>
+            <td><strong>Player 1 defects</strong></td>
+            <td class="payoff-tempt">5 , 0</td>
+            <td class="payoff-punish">1 , 1</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">Format: Player 1 score , Player 2 score</p>
+    </section>
+
+    <section>
+      <h3>Inputs</h3>
+      <div class="grid">
+        <div class="card">
+          <label class="card-title" for="strategy1">Player 1 strategy</label>
+          <select id="strategy1" class="input-field">
+            <option value="tit-for-tat">Tit-for-tat</option>
+            <option value="always-cooperate">Always cooperate</option>
+            <option value="always-defect">Always defect</option>
+            <option value="grim-trigger">Grim trigger</option>
+            <option value="tit-for-two-tats">Tit-for-two-tats</option>
+            <option value="random">Random (50/50)</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <label class="card-title" for="strategy2">Player 2 strategy</label>
+          <select id="strategy2" class="input-field">
+            <option value="always-defect">Always defect</option>
+            <option value="tit-for-tat">Tit-for-tat</option>
+            <option value="always-cooperate">Always cooperate</option>
+            <option value="grim-trigger">Grim trigger</option>
+            <option value="tit-for-two-tats">Tit-for-two-tats</option>
+            <option value="random">Random (50/50)</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <label class="card-title" for="num_rounds">Number of rounds</label>
+          <input id="num_rounds" class="input-field" type="number" value="20" min="2" max="200" step="1">
+        </div>
+
+        <div class="card">
+          <label class="card-title" for="random_seed">Random seed</label>
+          <input id="random_seed" class="input-field" type="number" value="42" min="0" step="1">
+        </div>
+      </div>
+
+      <div class="buttons" style="margin-top: 12px;">
+        <button class="button primary" id="runBtn">Run</button>
+        <button class="button" id="randomSeedBtn">New random seed</button>
+      </div>
+    </section>
+
+    <section>
+      <h3>Results</h3>
+      <div id="summary" class="output-box" style="min-height: auto; margin-bottom: 12px;"></div>
+      <div class="chart-container">
+        <div id="chart" style="height: 380px;"></div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Round-by-round log</h3>
+      <div style="overflow-x: auto;">
+        <table id="round-log" class="round-table">
+          <thead>
+            <tr>
+              <th>Round</th>
+              <th>P1 action</th>
+              <th>P2 action</th>
+              <th>P1 score</th>
+              <th>P2 score</th>
+              <th>P1 cumulative</th>
+              <th>P2 cumulative</th>
+            </tr>
+          </thead>
+          <tbody id="round-log-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h3>Strategy glossary</h3>
+      <dl class="glossary">
+        <dt>Tit-for-tat</dt>
+        <dd>Cooperate on round 1, then copy whatever the opponent did last round. Rewards cooperation, punishes defection immediately.</dd>
+
+        <dt>Always cooperate</dt>
+        <dd>Never defects. Achieves mutual benefit against cooperative opponents but is easily exploited.</dd>
+
+        <dt>Always defect</dt>
+        <dd>Never cooperates. Exploits naive opponents but cannot achieve sustained mutual cooperation.</dd>
+
+        <dt>Grim trigger</dt>
+        <dd>Cooperate until the opponent defects once, then defect forever. Maximally punishing — leaves no room for forgiveness.</dd>
+
+        <dt>Tit-for-two-tats</dt>
+        <dd>Only retaliates after two consecutive defections. More forgiving than tit-for-tat; less easily baited into punishment cycles.</dd>
+
+        <dt>Random (50/50)</dt>
+        <dd>Cooperates or defects with equal probability each round, ignoring history.</dd>
+      </dl>
+    </section>
+  </main>
+
+<style>
+  .payoff-table {
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 15px;
+  }
+  .payoff-table th, .payoff-table td {
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .payoff-table th { background: var(--card); font-weight: 600; }
+  .payoff-mutual { background: #e8f5e9; }
+  .payoff-punish { background: #fff3e0; }
+  .payoff-sucker { background: #fce4ec; }
+  .payoff-tempt  { background: #e3f2fd; }
+
+  .round-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .round-table th, .round-table td {
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    text-align: center;
+  }
+  .round-table th { background: var(--card); font-weight: 600; }
+  .round-table tr:nth-child(even) { background: var(--card); }
+  .action-c { color: #2e7d32; font-weight: 600; }
+  .action-d { color: #c62828; font-weight: 600; }
+
+  .glossary dt { font-weight: 600; margin-top: 12px; }
+  .glossary dd { margin: 4px 0 0 16px; color: var(--muted); }
+</style>
+
+<script>
+const PAYOFFS = {
+  CC: [3, 3],
+  CD: [0, 5],
+  DC: [5, 0],
+  DD: [1, 1],
+};
+
+function makeStrategy(name) {
+  let grimTriggered = false;
+  let oppDefectStreak = 0;
+
+  return function(round, myHistory, oppHistory, rng) {
+    switch (name) {
+      case "always-cooperate":
+        return "C";
+      case "always-defect":
+        return "D";
+      case "tit-for-tat":
+        return round === 0 ? "C" : oppHistory[round - 1];
+      case "grim-trigger":
+        if (oppHistory.includes("D")) grimTriggered = true;
+        return grimTriggered ? "D" : "C";
+      case "tit-for-two-tats":
+        if (round < 2) return "C";
+        return (oppHistory[round - 1] === "D" && oppHistory[round - 2] === "D") ? "D" : "C";
+      case "random":
+        return rng() < 0.5 ? "C" : "D";
+      default:
+        return "C";
+    }
+  };
+}
+
+// Seeded pseudo-random number generator (mulberry32)
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return function() {
+    s += 0x6D2B79F5;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function runSimulation(strategy1Name, strategy2Name, numRounds, seed) {
+  const rng = makeRng(seed);
+  const strat1 = makeStrategy(strategy1Name);
+  const strat2 = makeStrategy(strategy2Name);
+
+  const p1History = [], p2History = [];
+  const rows = [];
+  let p1Cum = 0, p2Cum = 0;
+
+  for (let r = 0; r < numRounds; r++) {
+    const a1 = strat1(r, p1History, p2History, rng);
+    const a2 = strat2(r, p2History, p1History, rng);
+    const key = a1 + a2;
+    const [s1, s2] = PAYOFFS[key];
+    p1Cum += s1;
+    p2Cum += s2;
+    p1History.push(a1);
+    p2History.push(a2);
+    rows.push({ round: r + 1, a1, a2, s1, s2, p1Cum, p2Cum });
+  }
+
+  return rows;
+}
+
+function strategyLabel(name) {
+  return {
+    "tit-for-tat": "Tit-for-tat",
+    "always-cooperate": "Always cooperate",
+    "always-defect": "Always defect",
+    "grim-trigger": "Grim trigger",
+    "tit-for-two-tats": "Tit-for-two-tats",
+    "random": "Random (50/50)",
+  }[name] || name;
+}
+
+function run() {
+  const s1 = document.getElementById("strategy1").value;
+  const s2 = document.getElementById("strategy2").value;
+  const numRounds = Math.max(2, Math.min(200, parseInt(document.getElementById("num_rounds").value) || 20));
+  const seed = parseInt(document.getElementById("random_seed").value) || 0;
+
+  const rows = runSimulation(s1, s2, numRounds, seed);
+  const finalP1 = rows[rows.length - 1].p1Cum;
+  const finalP2 = rows[rows.length - 1].p2Cum;
+
+  // Summary
+  const winner = finalP1 > finalP2
+    ? `Player 1 (${strategyLabel(s1)}) wins`
+    : finalP2 > finalP1
+    ? `Player 2 (${strategyLabel(s2)}) wins`
+    : "It's a tie";
+
+  document.getElementById("summary").textContent =
+    `${winner}  |  P1 total: ${finalP1}  |  P2 total: ${finalP2}  |  Rounds: ${numRounds}`;
+
+  // Chart
+  Plotly.newPlot("chart", [
+    {
+      x: rows.map(r => r.round),
+      y: rows.map(r => r.p1Cum),
+      mode: "lines",
+      name: `P1: ${strategyLabel(s1)}`,
+    },
+    {
+      x: rows.map(r => r.round),
+      y: rows.map(r => r.p2Cum),
+      mode: "lines",
+      name: `P2: ${strategyLabel(s2)}`,
+    },
+  ], {
+    height: 380,
+    margin: { t: 10, r: 10, b: 40, l: 50 },
+    xaxis: { title: "Round", dtick: Math.max(1, Math.floor(numRounds / 20)) },
+    yaxis: { title: "Cumulative score" },
+    legend: { orientation: "h", y: 1.15, x: 0 },
+  }, { responsive: true });
+
+  // Round log
+  const tbody = document.getElementById("round-log-body");
+  tbody.innerHTML = "";
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.round}</td>
+      <td class="action-${r.a1.toLowerCase()}">${r.a1 === "C" ? "Cooperate" : "Defect"}</td>
+      <td class="action-${r.a2.toLowerCase()}">${r.a2 === "C" ? "Cooperate" : "Defect"}</td>
+      <td>${r.s1}</td>
+      <td>${r.s2}</td>
+      <td>${r.p1Cum}</td>
+      <td>${r.p2Cum}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+document.getElementById("runBtn").addEventListener("click", run);
+document.getElementById("randomSeedBtn").addEventListener("click", () => {
+  document.getElementById("random_seed").value = Math.floor(Math.random() * 1_000_000);
+});
+
+// Run on load so the page isn't blank
+run();
+</script>
+
+</body>
+</html>
