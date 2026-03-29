@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prisoner's Dilemma — Round-Robin Tournament</title>
+  <meta name="description" content="Round-robin tournament: every strategy competes against every other under signal noise and random game length." />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+</head>
+
+<body>
+  <header class="container">
+
+    <nav class="series-nav">
+      <a href="./02-signal-noise.html">← Part 2</a>
+      <span> | </span>
+      <a href="./index.html">Series home</a>
+    </nav>
+
+    <div class="header">
+      <div>
+        <h1>Round-robin tournament</h1>
+        <p class="subtitle">Every strategy plays every other — 5% signal noise, games end at random</p>
+      </div>
+      <nav class="nav">
+        <a href="../../">Home</a>
+        <a href="../">Simulations</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>Which strategy survives when nothing is certain — not signals, not game length?</h2>
+      <p>
+        Each pair of strategies plays one game. Every round has a 0.5% chance of being the last,
+        so the expected game length is 200 rounds but no strategy can count on that. Actions are
+        misperceived 5% of the time. Scores accumulate across all matchups — the winner is whoever
+        earns the most points in total.
+      </p>
+    </section>
+
+    <section>
+      <h3>Settings</h3>
+      <div class="grid" style="max-width: 480px;">
+        <div class="card">
+          <label class="card-title" for="seed">Random seed</label>
+          <input id="seed" class="input-field" type="number" value="42" min="0" step="1">
+        </div>
+      </div>
+      <div class="buttons" style="margin-top: 12px;">
+        <button class="button primary" id="runBtn">Run tournament</button>
+        <button class="button" id="newSeedBtn">New random seed</button>
+      </div>
+    </section>
+
+    <section>
+      <h3>Leaderboard</h3>
+      <table class="result-table" id="leaderboard">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Strategy</th>
+            <th>Total score</th>
+            <th>Avg score / round</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>Ties</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h3>Score breakdown</h3>
+      <div class="chart-container">
+        <div id="bar-chart" style="height: 340px;"></div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Strategy spotlight</h3>
+      <p class="note" style="margin-bottom: 14px;">Select a strategy to see how it performed in each individual matchup.</p>
+      <div style="max-width: 320px; margin-bottom: 16px;">
+        <label class="card-title" for="spotlight_strategy">Strategy</label>
+        <select id="spotlight_strategy" class="input-field" style="margin-top: 6px;">
+          <option value="tit-for-tat">Tit-for-tat</option>
+          <option value="always-cooperate">Always cooperate</option>
+          <option value="always-defect">Always defect</option>
+          <option value="grim-trigger">Grim trigger</option>
+          <option value="tit-for-two-tats">Tit-for-two-tats</option>
+          <option value="random">Random (50/50)</option>
+        </select>
+      </div>
+      <div id="spotlight-summary" class="output-box" style="min-height: auto; margin-bottom: 12px;"></div>
+      <table class="result-table" id="spotlight-table">
+        <thead>
+          <tr>
+            <th>Opponent</th>
+            <th>Rounds played</th>
+            <th>Your score</th>
+            <th>Opp. score</th>
+            <th>Score diff</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="spotlight-body"></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h3>Head-to-head matrix</h3>
+      <p class="note" style="margin-bottom: 10px;">
+        Row strategy's score vs. column strategy. Higher is better for the row player.
+      </p>
+      <div style="overflow-x: auto;">
+        <div id="matrix-container"></div>
+      </div>
+    </section>
+
+    <section>
+      <h3>How this tournament works</h3>
+      <p>
+        This is modelled after Robert Axelrod's 1980 computer tournament, which found that
+        cooperative strategies — particularly <em>tit-for-tat</em> — outperformed more aggressive
+        ones in repeated games. Here we add two complications Axelrod's original tournament did not have:
+      </p>
+      <ul style="color: var(--muted); padding-left: 20px; line-height: 1.9;">
+        <li><strong>Signal noise (5%):</strong> each player independently misperceives the other's action with 5% probability, which can trigger undeserved punishment spirals.</li>
+        <li><strong>Uncertain game length (0.5%/round end probability):</strong> strategies cannot defect in the "last round" because they never know when it is coming. Expected game length is 200 rounds.</li>
+      </ul>
+      <p>
+        Both features tend to hurt strategies that punish harshly (like grim trigger) and reward
+        strategies with some tolerance for perceived defection.
+      </p>
+    </section>
+  </main>
+
+<style>
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .result-table th, .result-table td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .result-table th { background: var(--card); font-weight: 600; }
+  .result-table tbody tr:nth-child(even) { background: var(--card); }
+  .result-table .highlight-row { background: #e8f5e9 !important; font-weight: 600; }
+
+  .matrix-table {
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .matrix-table th, .matrix-table td {
+    border: 1px solid var(--border);
+    padding: 7px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .matrix-table th { background: var(--card); font-weight: 600; }
+  .matrix-table .diag { background: #f5f5f5; color: var(--muted); }
+  .matrix-table .win  { background: #e8f5e9; }
+  .matrix-table .loss { background: #fce4ec; }
+  .matrix-table .tie  { background: #fff8e1; }
+  .matrix-table .spotlight-col { outline: 2px solid #1b5e20; }
+
+  .result-win  { color: #2e7d32; font-weight: 600; }
+  .result-loss { color: #c62828; font-weight: 600; }
+  .result-tie  { color: #e65100; font-weight: 600; }
+  .diff-pos { color: #2e7d32; }
+  .diff-neg { color: #c62828; }
+</style>
+
+<script>
+const STRATEGY_KEYS = [
+  "tit-for-tat",
+  "always-cooperate",
+  "always-defect",
+  "grim-trigger",
+  "tit-for-two-tats",
+  "random",
+];
+
+const LABELS = {
+  "tit-for-tat":       "Tit-for-tat",
+  "always-cooperate":  "Always cooperate",
+  "always-defect":     "Always defect",
+  "grim-trigger":      "Grim trigger",
+  "tit-for-two-tats":  "Tit-for-two-tats",
+  "random":            "Random (50/50)",
+};
+
+const SHORT = {
+  "tit-for-tat":       "TfT",
+  "always-cooperate":  "AllC",
+  "always-defect":     "AllD",
+  "grim-trigger":      "Grim",
+  "tit-for-two-tats":  "Tf2T",
+  "random":            "Rand",
+};
+
+const PAYOFFS = { CC:[3,3], CD:[0,5], DC:[5,0], DD:[1,1] };
+const SIGNAL_ERROR = 0.05;
+const END_PROB = 0.005;
+
+// Mulberry32 seeded RNG
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s += 0x6D2B79F5;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function flip(a) { return a === "C" ? "D" : "C"; }
+
+function makeStrategy(name) {
+  let grimTriggered = false;
+  return function(round, perceivedOppHistory, rng) {
+    switch (name) {
+      case "always-cooperate": return "C";
+      case "always-defect":   return "D";
+      case "tit-for-tat":
+        return round === 0 ? "C" : perceivedOppHistory[round - 1];
+      case "grim-trigger":
+        if (perceivedOppHistory.includes("D")) grimTriggered = true;
+        return grimTriggered ? "D" : "C";
+      case "tit-for-two-tats":
+        if (round < 2) return "C";
+        return (perceivedOppHistory[round-1] === "D" && perceivedOppHistory[round-2] === "D") ? "D" : "C";
+      case "random":
+        return rng() < 0.5 ? "C" : "D";
+      default: return "C";
+    }
+  };
+}
+
+function playGame(name1, name2, rng) {
+  const s1 = makeStrategy(name1);
+  const s2 = makeStrategy(name2);
+  const p1seesP2 = [], p2seesP1 = [];
+  let score1 = 0, score2 = 0, rounds = 0;
+
+  while (true) {
+    const a1 = s1(rounds, p1seesP2, rng);
+    const a2 = s2(rounds, p2seesP1, rng);
+    const [ps1, ps2] = PAYOFFS[a1 + a2];
+    score1 += ps1; score2 += ps2;
+
+    p2seesP1.push(rng() < SIGNAL_ERROR ? flip(a1) : a1);
+    p1seesP2.push(rng() < SIGNAL_ERROR ? flip(a2) : a2);
+
+    rounds++;
+    if (rng() < END_PROB) break;
+  }
+
+  return { score1, score2, rounds };
+}
+
+// Tournament results stored here after run
+let results = null;
+
+function runTournament() {
+  const seed = parseInt(document.getElementById("seed").value) || 0;
+  const rng = makeRng(seed);
+
+  // matchup[i][j] = { score_i, score_j, rounds } for i < j
+  // We store scores in a symmetric matrix: scores[i][j] = what strategy i scored against j
+  const n = STRATEGY_KEYS.length;
+  const scores  = Array.from({length: n}, () => Array(n).fill(null));
+  const roundsPlayed = Array.from({length: n}, () => Array(n).fill(0));
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const { score1, score2, rounds } = playGame(STRATEGY_KEYS[i], STRATEGY_KEYS[j], rng);
+      scores[i][j] = score1;
+      scores[j][i] = score2;
+      roundsPlayed[i][j] = rounds;
+      roundsPlayed[j][i] = rounds;
+    }
+  }
+
+  // Totals
+  const totals     = STRATEGY_KEYS.map((_, i) => scores[i].reduce((s, v) => s + (v ?? 0), 0));
+  const totalRounds = STRATEGY_KEYS.map((_, i) =>
+    roundsPlayed[i].reduce((s, v) => s + v, 0) / (n - 1)  // avg rounds per game
+  );
+
+  // Wins/losses/ties per strategy
+  const wins   = Array(n).fill(0);
+  const losses = Array(n).fill(0);
+  const ties   = Array(n).fill(0);
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      if (scores[i][j] > scores[j][i]) wins[i]++;
+      else if (scores[i][j] < scores[j][i]) losses[i]++;
+      else ties[i]++;
+    }
+  }
+
+  results = { scores, roundsPlayed, totals, totalRounds, wins, losses, ties };
+  renderAll();
+}
+
+function renderAll() {
+  renderLeaderboard();
+  renderBarChart();
+  renderSpotlight();
+  renderMatrix();
+}
+
+function rankOrder() {
+  return STRATEGY_KEYS
+    .map((_, i) => i)
+    .sort((a, b) => results.totals[b] - results.totals[a]);
+}
+
+function renderLeaderboard() {
+  const { totals, totalRounds, wins, losses, ties } = results;
+  const order = rankOrder();
+  const tbody = document.getElementById("leaderboard-body");
+  tbody.innerHTML = "";
+  order.forEach((i, rank) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${rank + 1}</td>
+      <td style="text-align:left">${LABELS[STRATEGY_KEYS[i]]}</td>
+      <td>${totals[i]}</td>
+      <td>${(totals[i] / ((STRATEGY_KEYS.length - 1) * totalRounds[i])).toFixed(2)}</td>
+      <td class="result-win">${wins[i]}</td>
+      <td class="result-loss">${losses[i]}</td>
+      <td class="result-tie">${ties[i]}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderBarChart() {
+  const { totals } = results;
+  const spotKey = document.getElementById("spotlight_strategy").value;
+  const order   = rankOrder();
+  const colors  = order.map(i => STRATEGY_KEYS[i] === spotKey ? "#1b5e20" : "#81c784");
+
+  Plotly.newPlot("bar-chart", [{
+    type: "bar",
+    x: order.map(i => LABELS[STRATEGY_KEYS[i]]),
+    y: order.map(i => totals[i]),
+    marker: { color: colors },
+    hovertemplate: "%{x}<br>Total: %{y}<extra></extra>",
+  }], {
+    height: 340,
+    margin: { t: 10, r: 10, b: 90, l: 60 },
+    xaxis: { tickangle: -25 },
+    yaxis: { title: "Total score" },
+    plot_bgcolor: "transparent",
+    paper_bgcolor: "transparent",
+  }, { responsive: true });
+}
+
+function renderSpotlight() {
+  if (!results) return;
+  const key = document.getElementById("spotlight_strategy").value;
+  const i   = STRATEGY_KEYS.indexOf(key);
+  const { scores, roundsPlayed, totals, wins, losses, ties } = results;
+  const n   = STRATEGY_KEYS.length;
+  const order = rankOrder();
+  const rank  = order.indexOf(i) + 1;
+
+  document.getElementById("spotlight-summary").textContent =
+    `${LABELS[key]}  |  Rank: ${rank}/${n}  |  Total score: ${totals[i]}  |  Record: ${wins[i]}W – ${losses[i]}L – ${ties[i]}T`;
+
+  const tbody = document.getElementById("spotlight-body");
+  tbody.innerHTML = "";
+  for (let j = 0; j < n; j++) {
+    if (j === i) continue;
+    const si = scores[i][j];
+    const sj = scores[j][i];
+    const diff = si - sj;
+    const result = si > sj ? "Win" : si < sj ? "Loss" : "Tie";
+    const resultClass = si > sj ? "result-win" : si < sj ? "result-loss" : "result-tie";
+    const diffClass   = diff > 0 ? "diff-pos" : diff < 0 ? "diff-neg" : "";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="text-align:left">${LABELS[STRATEGY_KEYS[j]]}</td>
+      <td>${roundsPlayed[i][j]}</td>
+      <td>${si}</td>
+      <td>${sj}</td>
+      <td class="${diffClass}">${diff > 0 ? "+" : ""}${diff}</td>
+      <td class="${resultClass}">${result}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // Refresh chart colors to match spotlight
+  renderBarChart();
+}
+
+function renderMatrix() {
+  const { scores } = results;
+  const n = STRATEGY_KEYS.length;
+  const spotKey = document.getElementById("spotlight_strategy").value;
+  const spotCol = STRATEGY_KEYS.indexOf(spotKey);
+
+  let html = '<table class="matrix-table"><thead><tr><th></th>';
+  for (let j = 0; j < n; j++) {
+    html += `<th>${SHORT[STRATEGY_KEYS[j]]}</th>`;
+  }
+  html += "</tr></thead><tbody>";
+
+  for (let i = 0; i < n; i++) {
+    html += `<tr><th style="text-align:left">${LABELS[STRATEGY_KEYS[i]]}</th>`;
+    for (let j = 0; j < n; j++) {
+      if (i === j) {
+        html += `<td class="diag">—</td>`;
+      } else {
+        const si = scores[i][j];
+        const sj = scores[j][i];
+        let cls = si > sj ? "win" : si < sj ? "loss" : "tie";
+        if (j === spotCol && i !== spotCol) cls += " spotlight-col";
+        html += `<td class="${cls}">${si}</td>`;
+      }
+    }
+    html += "</tr>";
+  }
+
+  html += "</tbody></table>";
+  document.getElementById("matrix-container").innerHTML = html;
+}
+
+// Wire up controls
+document.getElementById("runBtn").addEventListener("click", runTournament);
+document.getElementById("newSeedBtn").addEventListener("click", () => {
+  document.getElementById("seed").value = Math.floor(Math.random() * 1_000_000);
+});
+document.getElementById("spotlight_strategy").addEventListener("change", () => {
+  if (results) {
+    renderSpotlight();
+    renderMatrix();
+  }
+});
+
+// Run on load
+runTournament();
+</script>
+
+</body>
+</html>
