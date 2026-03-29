@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prisoner's Dilemma — Signal Noise</title>
+  <meta name="description" content="Repeated prisoner's dilemma with signal noise: design your own strategy and see how noise disrupts cooperation." />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+</head>
+
+<body>
+  <header class="container">
+
+    <nav class="series-nav">
+      <a href="./01-prisoners-dilemma.html">← Part 1</a>
+      <span> | </span>
+      <a href="./index.html">Series home</a>
+    </nav>
+
+    <div class="header">
+      <div>
+        <h1>Prisoner's dilemma with signal noise</h1>
+        <p class="subtitle">What happens to cooperation when players can't perfectly observe each other's actions?</p>
+      </div>
+      <nav class="nav">
+        <a href="../../">Home</a>
+        <a href="../">Simulations</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>In the real world, signals get corrupted. Design your strategy and see if it survives.</h2>
+      <p>
+        In Part 1, both players always correctly observed each other's actions. Here, each
+        action is misperceived with some probability — a cooperate looks like a defect, or
+        vice versa. Even a perfectly cooperative strategy can trigger a punishment spiral if the
+        wrong signal gets through. Design your own strategy and pit it against a built-in opponent.
+      </p>
+    </section>
+
+    <section>
+      <h3>Game settings</h3>
+      <div class="grid">
+        <div class="card">
+          <label class="card-title" for="opponent_strategy">Opponent strategy</label>
+          <select id="opponent_strategy" class="input-field">
+            <option value="tit-for-tat">Tit-for-tat</option>
+            <option value="always-cooperate">Always cooperate</option>
+            <option value="always-defect">Always defect</option>
+            <option value="grim-trigger">Grim trigger</option>
+            <option value="tit-for-two-tats">Tit-for-two-tats</option>
+            <option value="random">Random (50/50)</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <label class="card-title" for="signal_error">Signal error (%)</label>
+          <input id="signal_error" class="input-field" type="number" value="5" min="0" max="50" step="1">
+        </div>
+
+        <div class="card">
+          <label class="card-title" for="num_rounds">Number of rounds</label>
+          <input id="num_rounds" class="input-field" type="number" value="40" min="2" max="200" step="1">
+        </div>
+
+        <div class="card">
+          <label class="card-title" for="random_seed">Random seed</label>
+          <input id="random_seed" class="input-field" type="number" value="42" min="0" step="1">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Your strategy</h3>
+      <p class="note" style="margin-bottom: 14px;">
+        Your responses are based on what you <em>perceive</em> the opponent doing — which may
+        differ from their actual action when signal noise is present.
+      </p>
+
+      <div class="grid" style="margin-bottom: 14px;">
+        <div class="card">
+          <label class="card-title" for="start_action">Starting action (round 1)</label>
+          <select id="start_action" class="input-field">
+            <option value="C">Cooperate</option>
+            <option value="D">Defect</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <label class="card-title" for="memory_depth">Memory depth (rounds of history)</label>
+          <select id="memory_depth" class="input-field">
+            <option value="1">1 round</option>
+            <option value="2">2 rounds</option>
+            <option value="3">3 rounds</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="buttons" style="margin-bottom: 14px;">
+        <span style="font-size: 14px; color: var(--muted); align-self: center;">Load preset:</span>
+        <button class="button" id="presetTfT">Tit-for-tat</button>
+        <button class="button" id="presetAllC">Always cooperate</button>
+        <button class="button" id="presetAllD">Always defect</button>
+      </div>
+
+      <div id="response-table-container"></div>
+      <p class="note" style="margin-top: 10px;">
+        For early rounds where there is not enough history, missing rounds are treated as
+        Cooperate when looking up your response.
+      </p>
+    </section>
+
+    <div class="buttons" style="margin-top: 4px;">
+      <button class="button primary" id="runBtn">Run</button>
+      <button class="button" id="randomSeedBtn">New random seed</button>
+    </div>
+
+    <section>
+      <h3>Results</h3>
+      <div id="summary" class="output-box" style="min-height: auto; margin-bottom: 12px;"></div>
+      <div class="chart-container">
+        <div id="chart" style="height: 380px;"></div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Round-by-round log</h3>
+      <p class="note" style="margin-bottom: 8px;">
+        ⚡ marks a corrupted signal. Scores are calculated from <em>actual</em> actions, not perceived ones.
+      </p>
+      <div style="overflow-x: auto;">
+        <table class="round-table">
+          <thead>
+            <tr>
+              <th>Round</th>
+              <th>Your action</th>
+              <th>Opp. action</th>
+              <th>Opp. saw you do</th>
+              <th>You saw opp. do</th>
+              <th>Your score</th>
+              <th>Opp. score</th>
+              <th>Your total</th>
+              <th>Opp. total</th>
+            </tr>
+          </thead>
+          <tbody id="round-log-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h3>About signal noise</h3>
+      <p>
+        Signal noise models situations where players cannot perfectly observe each other's behavior —
+        due to miscommunication, ambiguous actions, or imperfect information. Even a small error rate
+        (5–10%) can cause tit-for-tat to fall into extended punishment cycles: one corrupted signal
+        triggers retaliation, which triggers more retaliation, and neither player knows why the other
+        "suddenly" defected.
+      </p>
+      <p>
+        More forgiving strategies — like <em>tit-for-two-tats</em>, which only retaliates after two
+        consecutive perceived defections — tend to be more robust to noise. Try designing a memory-2
+        or memory-3 strategy that handles noise better than the presets.
+      </p>
+    </section>
+  </main>
+
+<style>
+  .round-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .round-table th, .round-table td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .round-table th { background: var(--card); font-weight: 600; }
+  .round-table tr:nth-child(even) { background: var(--card); }
+  .noise-row { background: #fff8e1 !important; }
+  .action-c { color: #2e7d32; font-weight: 600; }
+  .action-d { color: #c62828; font-weight: 600; }
+
+  .response-table {
+    border-collapse: collapse;
+    font-size: 15px;
+    margin-top: 4px;
+  }
+  .response-table th, .response-table td {
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    text-align: center;
+  }
+  .response-table th { background: var(--card); font-weight: 600; }
+  .response-table .action-c { color: #2e7d32; }
+  .response-table .action-d { color: #c62828; }
+</style>
+
+<script>
+const PAYOFFS = { CC: [3,3], CD: [0,5], DC: [5,0], DD: [1,1] };
+
+// Seeded RNG (mulberry32)
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s += 0x6D2B79F5;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function flip(a) { return a === "C" ? "D" : "C"; }
+
+// All C/D combinations for a given memory depth (oldest → newest)
+function getCombinations(depth) {
+  if (depth === 0) return [""];
+  return getCombinations(depth - 1).flatMap(s => ["C", "D"].map(c => s + c));
+}
+
+// Built-in opponent strategies — operate on their perceived history of the player
+function makeOpponentStrategy(name) {
+  let grimTriggered = false;
+  return function(round, myActualHistory, perceivedPlayerHistory, rng) {
+    switch (name) {
+      case "always-cooperate": return "C";
+      case "always-defect":   return "D";
+      case "tit-for-tat":
+        return round === 0 ? "C" : perceivedPlayerHistory[round - 1];
+      case "grim-trigger":
+        if (perceivedPlayerHistory.includes("D")) grimTriggered = true;
+        return grimTriggered ? "D" : "C";
+      case "tit-for-two-tats":
+        if (round < 2) return "C";
+        return (perceivedPlayerHistory[round-1] === "D" && perceivedPlayerHistory[round-2] === "D") ? "D" : "C";
+      case "random":
+        return rng() < 0.5 ? "C" : "D";
+      default: return "C";
+    }
+  };
+}
+
+// Build the player's strategy from the form
+function buildPlayerStrategy(startAction, memoryDepth, responseTable) {
+  return function(round, perceivedOppHistory) {
+    if (round === 0) return startAction;
+    // Take last memoryDepth perceived moves; pad front with C if not enough history yet
+    const recent = perceivedOppHistory.slice(Math.max(0, round - memoryDepth));
+    while (recent.length < memoryDepth) recent.unshift("C");
+    return responseTable[recent.join("")] || "C";
+  };
+}
+
+// Render the response table dynamically based on memory depth
+function renderResponseTable(depth, existingValues) {
+  const combos = getCombinations(depth);
+
+  let html = '<table class="response-table"><thead><tr>';
+  for (let i = depth; i >= 1; i--) {
+    html += `<th>${i === 1 ? "Last round" : `${i} rounds ago`}</th>`;
+  }
+  html += "<th>Your response</th></tr></thead><tbody>";
+
+  for (const combo of combos) {
+    html += "<tr>";
+    for (const ch of combo) {
+      html += `<td class="action-${ch.toLowerCase()}">${ch === "C" ? "Cooperate" : "Defect"}</td>`;
+    }
+    // Default to tit-for-tat behaviour (mirror last move) if no existing value
+    const defaultVal = combo[combo.length - 1] === "C" ? "C" : "D";
+    const val = (existingValues && existingValues[combo] !== undefined) ? existingValues[combo] : defaultVal;
+    html += `
+      <td>
+        <select class="input-field response-select" data-combo="${combo}"
+          style="width: auto; padding: 6px 10px;">
+          <option value="C" ${val === "C" ? "selected" : ""}>Cooperate</option>
+          <option value="D" ${val === "D" ? "selected" : ""}>Defect</option>
+        </select>
+      </td>`;
+    html += "</tr>";
+  }
+
+  html += "</tbody></table>";
+  document.getElementById("response-table-container").innerHTML = html;
+}
+
+function getResponseTable() {
+  const table = {};
+  document.querySelectorAll(".response-select").forEach(sel => {
+    table[sel.dataset.combo] = sel.value;
+  });
+  return table;
+}
+
+// Presets: define the response for any combination based on its last character
+const PRESETS = {
+  "tit-for-tat":      { start: "C", fn: combo => combo[combo.length - 1] === "C" ? "C" : "D" },
+  "always-cooperate": { start: "C", fn: ()    => "C" },
+  "always-defect":    { start: "D", fn: ()    => "D" },
+};
+
+function applyPreset(name) {
+  const preset = PRESETS[name];
+  document.getElementById("start_action").value = preset.start;
+  const depth = parseInt(document.getElementById("memory_depth").value);
+  const values = Object.fromEntries(getCombinations(depth).map(c => [c, preset.fn(c)]));
+  renderResponseTable(depth, values);
+}
+
+function run() {
+  const oppName     = document.getElementById("opponent_strategy").value;
+  const signalError = Math.min(0.5, Math.max(0, parseFloat(document.getElementById("signal_error").value) / 100)) || 0;
+  const numRounds   = Math.max(2, Math.min(200, parseInt(document.getElementById("num_rounds").value) || 40));
+  const seed        = parseInt(document.getElementById("random_seed").value) || 0;
+  const startAction = document.getElementById("start_action").value;
+  const memDepth    = parseInt(document.getElementById("memory_depth").value);
+  const respTable   = getResponseTable();
+
+  const rng           = makeRng(seed);
+  const playerStrat   = buildPlayerStrategy(startAction, memDepth, respTable);
+  const opponentStrat = makeOpponentStrategy(oppName);
+
+  // Actual action histories and each player's perceived history of the other
+  const p1Actual = [], p2Actual = [];
+  const p1seenByP2 = [], p2seenByP1 = [];
+
+  const rows = [];
+  let p1Cum = 0, p2Cum = 0, noiseCount = 0;
+
+  for (let r = 0; r < numRounds; r++) {
+    const a1 = playerStrat(r, p2seenByP1);
+    const a2 = opponentStrat(r, p2Actual, p1seenByP2, rng);
+
+    // Apply signal noise independently in each direction
+    const p1perceived = rng() < signalError ? flip(a1) : a1; // what P2 sees P1 do
+    const p2perceived = rng() < signalError ? flip(a2) : a2; // what P1 sees P2 do
+
+    const [s1, s2] = PAYOFFS[a1 + a2];
+    p1Cum += s1; p2Cum += s2;
+
+    const noisy = p1perceived !== a1 || p2perceived !== a2;
+    if (noisy) noiseCount++;
+
+    p1Actual.push(a1);
+    p2Actual.push(a2);
+    p1seenByP2.push(p1perceived);
+    p2seenByP1.push(p2perceived);
+
+    rows.push({ round: r+1, a1, a2, p1perceived, p2perceived, s1, s2, p1Cum, p2Cum, noisy });
+  }
+
+  // Summary
+  const oppLabel = { "tit-for-tat": "Tit-for-tat", "always-cooperate": "Always cooperate",
+    "always-defect": "Always defect", "grim-trigger": "Grim trigger",
+    "tit-for-two-tats": "Tit-for-two-tats", "random": "Random (50/50)" }[oppName];
+
+  const winner = p1Cum > p2Cum ? "You win"
+               : p2Cum > p1Cum ? `Opponent (${oppLabel}) wins`
+               : "Tie";
+
+  document.getElementById("summary").textContent =
+    `${winner}  |  Your total: ${p1Cum}  |  Opponent total: ${p2Cum}  |  Rounds: ${numRounds}  |  Signal errors: ${noiseCount}`;
+
+  // Chart
+  Plotly.newPlot("chart", [
+    { x: rows.map(r => r.round), y: rows.map(r => r.p1Cum), mode: "lines", name: "You" },
+    { x: rows.map(r => r.round), y: rows.map(r => r.p2Cum), mode: "lines", name: `Opponent: ${oppLabel}` },
+  ], {
+    height: 380,
+    margin: { t: 10, r: 10, b: 40, l: 50 },
+    xaxis: { title: "Round", dtick: Math.max(1, Math.floor(numRounds / 20)) },
+    yaxis: { title: "Cumulative score" },
+    legend: { orientation: "h", y: 1.15, x: 0 },
+  }, { responsive: true });
+
+  // Round log
+  const tbody = document.getElementById("round-log-body");
+  tbody.innerHTML = "";
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    if (r.noisy) tr.className = "noise-row";
+    tr.innerHTML = `
+      <td>${r.round}</td>
+      <td class="action-${r.a1.toLowerCase()}">${r.a1 === "C" ? "Cooperate" : "Defect"}</td>
+      <td class="action-${r.a2.toLowerCase()}">${r.a2 === "C" ? "Cooperate" : "Defect"}</td>
+      <td class="action-${r.p1perceived.toLowerCase()}">${r.p1perceived === "C" ? "Cooperate" : "Defect"}${r.p1perceived !== r.a1 ? " ⚡" : ""}</td>
+      <td class="action-${r.p2perceived.toLowerCase()}">${r.p2perceived === "C" ? "Cooperate" : "Defect"}${r.p2perceived !== r.a2 ? " ⚡" : ""}</td>
+      <td>${r.s1}</td>
+      <td>${r.s2}</td>
+      <td>${r.p1Cum}</td>
+      <td>${r.p2Cum}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// Wire up controls
+document.getElementById("memory_depth").addEventListener("change", () => {
+  renderResponseTable(parseInt(document.getElementById("memory_depth").value));
+});
+document.getElementById("runBtn").addEventListener("click", run);
+document.getElementById("randomSeedBtn").addEventListener("click", () => {
+  document.getElementById("random_seed").value = Math.floor(Math.random() * 1_000_000);
+});
+document.getElementById("presetTfT").addEventListener("click",  () => applyPreset("tit-for-tat"));
+document.getElementById("presetAllC").addEventListener("click", () => applyPreset("always-cooperate"));
+document.getElementById("presetAllD").addEventListener("click", () => applyPreset("always-defect"));
+
+// Initial render
+renderResponseTable(1);
+run();
+</script>
+
+</body>
+</html>
