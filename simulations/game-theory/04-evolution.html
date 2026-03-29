@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prisoner's Dilemma — Evolutionary Simulation</title>
+  <meta name="description" content="Evolutionary prisoner's dilemma: strategies compete for survival and reproduction across generations under signal noise." />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+</head>
+
+<body>
+  <header class="container">
+
+    <nav class="series-nav">
+      <a href="./03-tournament.html">← Part 3</a>
+      <span> | </span>
+      <a href="./index.html">Series home</a>
+    </nav>
+
+    <div class="header">
+      <div>
+        <h1>Evolutionary simulation</h1>
+        <p class="subtitle">Strategies compete to survive and reproduce — the fittest spread, the rest go extinct</p>
+      </div>
+      <nav class="nav">
+        <a href="../../">Home</a>
+        <a href="../">Simulations</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>What happens when score determines survival?</h2>
+      <p>
+        Every generation, agents are randomly paired and play a prisoner's dilemma with 5% signal
+        noise and a random game length. Higher-scoring agents reproduce more. Lower-scoring agents
+        are replaced. Over many generations, the population tilts toward whatever strategies
+        outcompete their neighbors — not just on average, but against whoever they happen to meet.
+      </p>
+    </section>
+
+    <section>
+      <h3>Settings</h3>
+      <div class="grid" style="max-width: 720px;">
+        <div class="card">
+          <label class="card-title" for="population_size">Population size</label>
+          <input id="population_size" class="input-field" type="number" value="120" min="60" max="600" step="60">
+          <div style="font-size:12px; color:var(--muted); margin-top:6px;">Split evenly across all 6 strategies at start</div>
+        </div>
+        <div class="card">
+          <label class="card-title" for="num_generations">Generations</label>
+          <input id="num_generations" class="input-field" type="number" value="80" min="10" max="300" step="10">
+        </div>
+        <div class="card">
+          <label class="card-title" for="seed">Random seed</label>
+          <input id="seed" class="input-field" type="number" value="42" min="0" step="1">
+        </div>
+      </div>
+      <div class="buttons" style="margin-top: 12px;">
+        <button class="button primary" id="runBtn">Run simulation</button>
+        <button class="button" id="newSeedBtn">New random seed</button>
+      </div>
+      <p class="note" id="status"></p>
+    </section>
+
+    <section>
+      <h3>Population over time</h3>
+      <p class="note" style="margin-bottom:10px;">
+        Stacked area shows each strategy's share of the total population each generation.
+        A strategy reaching zero has gone extinct.
+      </p>
+      <div class="chart-container">
+        <div id="area-chart" style="height:400px;"></div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Final standings</h3>
+      <table class="result-table" id="final-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Strategy</th>
+            <th>Final share</th>
+            <th>Final count</th>
+            <th>Status</th>
+            <th>Generation extinct / dominant</th>
+          </tr>
+        </thead>
+        <tbody id="final-body"></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h3>Average score per round</h3>
+      <p class="note" style="margin-bottom:10px;">
+        Average score earned per round played, for surviving strategies, across generations.
+        A strategy can be winning not because it scores high in any single game but because it
+        consistently avoids being exploited.
+      </p>
+      <div class="chart-container">
+        <div id="score-chart" style="height:360px;"></div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Spotlight: strategy trajectory</h3>
+      <div style="max-width:320px; margin-bottom:16px;">
+        <label class="card-title" for="spotlight_strategy">Strategy</label>
+        <select id="spotlight_strategy" class="input-field" style="margin-top:6px;">
+          <option value="tit-for-tat">Tit-for-tat</option>
+          <option value="always-cooperate">Always cooperate</option>
+          <option value="always-defect">Always defect</option>
+          <option value="grim-trigger">Grim trigger</option>
+          <option value="tit-for-two-tats">Tit-for-two-tats</option>
+          <option value="random">Random (50/50)</option>
+        </select>
+      </div>
+      <div id="spotlight-summary" class="output-box" style="min-height:auto; margin-bottom:12px;"></div>
+      <div class="chart-container">
+        <div id="spotlight-chart" style="height:300px;"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         WRITTEN COMMENTARY SECTION
+         Replace the placeholder below with your post.
+         The <div class="commentary"> block is where your writing goes.
+         You can use any standard HTML: <p>, <h4>, <ul>, <blockquote>, etc.
+         ============================================================ -->
+    <section id="commentary">
+      <h3>What this means beyond the game</h3>
+      <div class="commentary">
+
+        <!-- ✏️  YOUR POST STARTS HERE  ✏️ -->
+        <p class="note commentary-placeholder">
+          Post coming soon — applications to business strategy, market competition, and economic cooperation.
+        </p>
+        <!-- ✏️  YOUR POST ENDS HERE  ✏️ -->
+
+      </div>
+    </section>
+    <!-- ============================================================ -->
+
+  </main>
+
+<style>
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .result-table th, .result-table td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .result-table th { background: var(--card); font-weight: 600; }
+  .result-table tbody tr:nth-child(even) { background: var(--card); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-dominant { background: #e8f5e9; color: #1b5e20; }
+  .badge-surviving { background: #e3f2fd; color: #0d47a1; }
+  .badge-extinct { background: #fce4ec; color: #880e4f; }
+
+  .commentary {
+    border-left: 3px solid var(--border);
+    padding: 16px 24px;
+    margin-top: 8px;
+  }
+  .commentary-placeholder {
+    font-style: italic;
+  }
+  .commentary p { margin: 0 0 14px; line-height: 1.75; }
+  .commentary p:last-child { margin-bottom: 0; }
+  .commentary h4 { font-size: 16px; margin: 20px 0 8px; }
+  .commentary ul, .commentary ol { padding-left: 20px; color: var(--muted); line-height: 1.9; }
+  .commentary blockquote {
+    margin: 16px 0;
+    padding: 10px 16px;
+    background: var(--card);
+    border-left: 3px solid #ccc;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>
+
+<script>
+const STRATEGY_KEYS = [
+  "tit-for-tat",
+  "always-cooperate",
+  "always-defect",
+  "grim-trigger",
+  "tit-for-two-tats",
+  "random",
+];
+
+const LABELS = {
+  "tit-for-tat":      "Tit-for-tat",
+  "always-cooperate": "Always cooperate",
+  "always-defect":    "Always defect",
+  "grim-trigger":     "Grim trigger",
+  "tit-for-two-tats": "Tit-for-two-tats",
+  "random":           "Random (50/50)",
+};
+
+// Colorblind-friendly palette
+const COLORS = {
+  "tit-for-tat":      "#2196f3",
+  "always-cooperate": "#4caf50",
+  "always-defect":    "#f44336",
+  "grim-trigger":     "#ff9800",
+  "tit-for-two-tats": "#9c27b0",
+  "random":           "#9e9e9e",
+};
+
+const PAYOFFS = { CC:[3,3], CD:[0,5], DC:[5,0], DD:[1,1] };
+const SIGNAL_ERROR = 0.05;
+const END_PROB = 0.005;
+
+// Mulberry32 seeded RNG
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s += 0x6D2B79F5;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function flip(a) { return a === "C" ? "D" : "C"; }
+
+function makeStrategy(name) {
+  let grimTriggered = false;
+  return function(round, perceivedOppHistory, rng) {
+    switch (name) {
+      case "always-cooperate": return "C";
+      case "always-defect":   return "D";
+      case "tit-for-tat":
+        return round === 0 ? "C" : perceivedOppHistory[round - 1];
+      case "grim-trigger":
+        if (perceivedOppHistory.includes("D")) grimTriggered = true;
+        return grimTriggered ? "D" : "C";
+      case "tit-for-two-tats":
+        if (round < 2) return "C";
+        return (perceivedOppHistory[round-1] === "D" && perceivedOppHistory[round-2] === "D") ? "D" : "C";
+      case "random":
+        return rng() < 0.5 ? "C" : "D";
+      default: return "C";
+    }
+  };
+}
+
+function playGame(name1, name2, rng) {
+  const s1 = makeStrategy(name1);
+  const s2 = makeStrategy(name2);
+  const p1seesP2 = [], p2seesP1 = [];
+  let score1 = 0, score2 = 0, rounds = 0;
+  while (true) {
+    const a1 = s1(rounds, p1seesP2, rng);
+    const a2 = s2(rounds, p2seesP1, rng);
+    const [ps1, ps2] = PAYOFFS[a1 + a2];
+    score1 += ps1; score2 += ps2;
+    p2seesP1.push(rng() < SIGNAL_ERROR ? flip(a1) : a1);
+    p1seesP2.push(rng() < SIGNAL_ERROR ? flip(a2) : a2);
+    rounds++;
+    if (rng() < END_PROB) break;
+  }
+  return { score1, score2, rounds };
+}
+
+// Fisher-Yates shuffle
+function shuffle(arr, rng) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+// Fitness-proportionate selection (roulette wheel)
+function selectNext(population, fitness, n, rng) {
+  // Shift all fitness values so minimum = 1 (preserves relative differences, ensures all can reproduce)
+  const minF = Math.min(...fitness);
+  const shifted = fitness.map(f => f - minF + 1);
+  const total = shifted.reduce((a, b) => a + b, 0);
+
+  const next = [];
+  for (let i = 0; i < n; i++) {
+    let r = rng() * total;
+    for (let j = 0; j < population.length; j++) {
+      r -= shifted[j];
+      if (r <= 0) { next.push(population[j]); break; }
+    }
+    // safety fallback for floating point edge
+    if (next.length < i + 1) next.push(population[population.length - 1]);
+  }
+  return next;
+}
+
+// ---- Main simulation ----
+let simData = null;
+
+function runSimulation() {
+  const n    = Math.max(60, Math.min(600, parseInt(document.getElementById("population_size").value) || 120));
+  const gens = Math.max(10, Math.min(300, parseInt(document.getElementById("num_generations").value) || 80));
+  const seed = parseInt(document.getElementById("seed").value) || 0;
+
+  document.getElementById("status").textContent = "Running...";
+
+  // Defer to next frame so browser can paint the status message
+  setTimeout(() => {
+    const rng = makeRng(seed);
+
+    // Init population: equal share per strategy
+    const perStrategy = Math.floor(n / STRATEGY_KEYS.length);
+    let population = [];
+    for (let i = 0; i < STRATEGY_KEYS.length; i++) {
+      for (let j = 0; j < perStrategy; j++) population.push(i);
+    }
+    while (population.length < n) population.push(0);
+
+    // History: counts[gen][stratIdx], avgScore[gen][stratIdx]
+    const counts    = [countPop(population)];
+    const avgScores = [Array(STRATEGY_KEYS.length).fill(null)];
+    const extinctGen  = Array(STRATEGY_KEYS.length).fill(null);
+    const dominantGen = Array(STRATEGY_KEYS.length).fill(null);
+
+    for (let g = 0; g < gens; g++) {
+      const indices = Array.from({length: population.length}, (_, i) => i);
+      shuffle(indices, rng);
+
+      const fitness = Array(population.length).fill(0);
+      const gamesPlayed = Array(population.length).fill(0);
+
+      // Pair up agents
+      const pairs = Math.floor(population.length / 2);
+      for (let p = 0; p < pairs; p++) {
+        const a = indices[2 * p];
+        const b = indices[2 * p + 1];
+        const { score1, score2, rounds } = playGame(
+          STRATEGY_KEYS[population[a]],
+          STRATEGY_KEYS[population[b]],
+          rng
+        );
+        // Store score per round played (normalises for game length variance)
+        fitness[a] += score1 / rounds;
+        fitness[b] += score2 / rounds;
+        gamesPlayed[a]++;
+        gamesPlayed[b]++;
+      }
+      // Unpaired agent (if odd population) gets mean fitness
+      if (population.length % 2 === 1) {
+        const last = indices[population.length - 1];
+        const mean = fitness.reduce((s, v) => s + v, 0) / (population.length - 1);
+        fitness[last] = mean;
+        gamesPlayed[last] = 1;
+      }
+
+      // Average score per strategy this generation
+      const stratFitnessSum = Array(STRATEGY_KEYS.length).fill(0);
+      const stratCount      = Array(STRATEGY_KEYS.length).fill(0);
+      for (let i = 0; i < population.length; i++) {
+        stratFitnessSum[population[i]] += fitness[i];
+        stratCount[population[i]]++;
+      }
+      const genAvgScore = STRATEGY_KEYS.map((_, si) =>
+        stratCount[si] > 0 ? stratFitnessSum[si] / stratCount[si] : null
+      );
+
+      // Reproduce
+      population = selectNext(population, fitness, population.length, rng);
+
+      const c = countPop(population);
+      counts.push(c);
+      avgScores.push(genAvgScore);
+
+      // Track extinctions and dominance
+      const dom = n * 0.8;
+      STRATEGY_KEYS.forEach((_, si) => {
+        if (c[si] === 0 && extinctGen[si] === null) extinctGen[si] = g + 1;
+        if (c[si] >= dom && dominantGen[si] === null) dominantGen[si] = g + 1;
+      });
+    }
+
+    simData = { counts, avgScores, extinctGen, dominantGen, gens, n, population };
+    document.getElementById("status").textContent = "";
+    renderAll();
+  }, 20);
+}
+
+function countPop(population) {
+  const c = Array(STRATEGY_KEYS.length).fill(0);
+  population.forEach(s => c[s]++);
+  return c;
+}
+
+function renderAll() {
+  renderAreaChart();
+  renderScoreChart();
+  renderFinalTable();
+  renderSpotlight();
+}
+
+function renderAreaChart() {
+  const { counts, gens, n } = simData;
+  const genAxis = Array.from({length: gens + 1}, (_, i) => i);
+
+  const traces = STRATEGY_KEYS.map((key, si) => ({
+    x: genAxis,
+    y: counts.map(c => c[si] / n),
+    name: LABELS[key],
+    type: "scatter",
+    mode: "none",
+    fill: "tonexty",
+    stackgroup: "one",
+    fillcolor: COLORS[key],
+    line: { color: COLORS[key] },
+    hovertemplate: `${LABELS[key]}<br>Gen %{x}<br>Share: %{y:.1%}<extra></extra>`,
+  }));
+
+  Plotly.newPlot("area-chart", traces, {
+    height: 400,
+    margin: { t: 10, r: 10, b: 50, l: 55 },
+    xaxis: { title: "Generation", dtick: Math.max(1, Math.floor(gens / 20)) },
+    yaxis: { title: "Population share", tickformat: ".0%", range: [0, 1] },
+    legend: { orientation: "h", y: 1.12, x: 0 },
+    hovermode: "x unified",
+    plot_bgcolor: "transparent",
+    paper_bgcolor: "transparent",
+  }, { responsive: true });
+}
+
+function renderScoreChart() {
+  const { avgScores, gens } = simData;
+  const genAxis = Array.from({length: gens + 1}, (_, i) => i);
+
+  const traces = STRATEGY_KEYS.map((key, si) => ({
+    x: genAxis,
+    y: avgScores.map(g => g[si]),
+    name: LABELS[key],
+    mode: "lines",
+    connectgaps: false,
+    line: { color: COLORS[key], width: 2 },
+    hovertemplate: `${LABELS[key]}<br>Gen %{x}<br>Avg score/round: %{y:.3f}<extra></extra>`,
+  }));
+
+  Plotly.newPlot("score-chart", traces, {
+    height: 360,
+    margin: { t: 10, r: 10, b: 50, l: 60 },
+    xaxis: { title: "Generation", dtick: Math.max(1, Math.floor(gens / 20)) },
+    yaxis: { title: "Avg score per round" },
+    legend: { orientation: "h", y: 1.12, x: 0 },
+    hovermode: "x unified",
+    plot_bgcolor: "transparent",
+    paper_bgcolor: "transparent",
+  }, { responsive: true });
+}
+
+function renderFinalTable() {
+  const { counts, extinctGen, dominantGen, gens, n } = simData;
+  const final = counts[counts.length - 1];
+
+  const ranked = STRATEGY_KEYS
+    .map((key, i) => ({ key, i, count: final[i] }))
+    .sort((a, b) => b.count - a.count);
+
+  const tbody = document.getElementById("final-body");
+  tbody.innerHTML = "";
+
+  ranked.forEach(({ key, i, count }, rank) => {
+    const share = (count / n * 100).toFixed(1);
+    let statusBadge, eventText;
+
+    if (count === 0) {
+      statusBadge = '<span class="badge badge-extinct">Extinct</span>';
+      eventText   = extinctGen[i] !== null ? `Extinct gen ${extinctGen[i]}` : "—";
+    } else if (count / n >= 0.8) {
+      statusBadge = '<span class="badge badge-dominant">Dominant</span>';
+      eventText   = dominantGen[i] !== null ? `Dominant from gen ${dominantGen[i]}` : "Final gen";
+    } else {
+      statusBadge = '<span class="badge badge-surviving">Surviving</span>';
+      eventText   = "—";
+    }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${rank + 1}</td>
+      <td style="text-align:left">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+          background:${COLORS[key]};margin-right:6px;vertical-align:middle;"></span>
+        ${LABELS[key]}
+      </td>
+      <td>${share}%</td>
+      <td>${count}</td>
+      <td>${statusBadge}</td>
+      <td>${eventText}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderSpotlight() {
+  if (!simData) return;
+  const key = document.getElementById("spotlight_strategy").value;
+  const si  = STRATEGY_KEYS.indexOf(key);
+  const { counts, avgScores, extinctGen, dominantGen, gens, n } = simData;
+  const final = counts[counts.length - 1];
+
+  // Peak population
+  let peakShare = 0, peakGen = 0;
+  for (let g = 0; g <= gens; g++) {
+    const share = counts[g][si] / n;
+    if (share > peakShare) { peakShare = share; peakGen = g; }
+  }
+
+  const status = final[si] === 0 ? `Extinct (gen ${extinctGen[si]})`
+               : final[si] / n >= 0.8 ? `Dominant (from gen ${dominantGen[si] ?? "—"})`
+               : "Surviving";
+
+  document.getElementById("spotlight-summary").textContent =
+    `${LABELS[key]}  |  Final share: ${(final[si]/n*100).toFixed(1)}%  |  Peak: ${(peakShare*100).toFixed(1)}% at gen ${peakGen}  |  Status: ${status}`;
+
+  const genAxis = Array.from({length: gens + 1}, (_, i) => i);
+
+  Plotly.newPlot("spotlight-chart", [
+    {
+      x: genAxis,
+      y: counts.map(c => c[si] / n),
+      name: "Population share",
+      mode: "lines",
+      fill: "tozeroy",
+      line: { color: COLORS[key], width: 2 },
+      fillcolor: COLORS[key] + "33",
+      yaxis: "y",
+      hovertemplate: "Gen %{x}<br>Share: %{y:.1%}<extra></extra>",
+    },
+    {
+      x: genAxis,
+      y: avgScores.map(g => g[si]),
+      name: "Avg score/round",
+      mode: "lines",
+      line: { color: COLORS[key], width: 2, dash: "dot" },
+      connectgaps: false,
+      yaxis: "y2",
+      hovertemplate: "Gen %{x}<br>Avg score/round: %{y:.3f}<extra></extra>",
+    },
+  ], {
+    height: 300,
+    margin: { t: 10, r: 60, b: 50, l: 55 },
+    xaxis: { title: "Generation", dtick: Math.max(1, Math.floor(gens / 20)) },
+    yaxis: { title: "Population share", tickformat: ".0%", range: [0, 1] },
+    yaxis2: { title: "Avg score/round", overlaying: "y", side: "right", showgrid: false },
+    legend: { orientation: "h", y: 1.12, x: 0 },
+    plot_bgcolor: "transparent",
+    paper_bgcolor: "transparent",
+  }, { responsive: true });
+}
+
+// Wire up controls
+document.getElementById("runBtn").addEventListener("click", runSimulation);
+document.getElementById("newSeedBtn").addEventListener("click", () => {
+  document.getElementById("seed").value = Math.floor(Math.random() * 1_000_000);
+});
+document.getElementById("spotlight_strategy").addEventListener("change", () => {
+  if (simData) renderSpotlight();
+});
+
+// Run on load
+runSimulation();
+</script>
+
+</body>
+</html>
