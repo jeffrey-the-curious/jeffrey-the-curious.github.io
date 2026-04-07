@@ -34,8 +34,8 @@
       <h2>What changes in Part 2?</h2>
       <p>
         Part 1 used a simple threshold rule on a single day of prices.
-        Here, we’ll <strong>choose the charging and discharging decisions to optimize gross margin</strong>,
-        using a price forecast (and later: uncertainty).
+        Here, we’ll improve the charging and discharging decisions to <strong>optimize gross margin</strong>,
+        using a price forecast. We will assume perfect information for now (perfect forecasts) and explore uncertainty and model predictive control in the next part.
       </p>
     </section>
 
@@ -47,9 +47,7 @@
           to maximize gross margin, while respecting the battery’s physical constraints.
         </p>
         <ul>
-          <li><strong>Inputs:</strong> forecast prices, capacity, power limit, efficiency</li>
-          <li><strong>Decision:</strong> charge/discharge schedule (hour-by-hour)</li>
-          <li><strong>Output:</strong> profit + state of charge over time</li>
+          <li>Placeholder</li>
         </ul>
       </div>
     </section>
@@ -71,19 +69,19 @@ subject to state-of-charge, power limits, and efficiency
     </section>
 
     <section>
-      <h3>Planned build steps</h3>
+      <h3>Planned future steps for this project</h3>
       <div class="grid">
         <div class="card">
-          <div class="card-title">Step A — Deterministic optimization</div>
-          <p>Assume the forecast is perfect; solve for the optimal charge/discharge strategy.</p>
+          <div class="card-title">Step 1 — Deterministic optimization</div>
+          <p>Assume the forecast is perfect; solve for the optimal charge/discharge strategy (linear programming).</p>
         </div>
         <div class="card">
-          <div class="card-title">Step B — Forecast error</div>
-          <p>Introduce forecast vs realized prices (random noise error) and show the subsequent changes to strategy.</p>
+          <div class="card-title">Step 2 — Forecast error</div>
+          <p>Introduce real prices that randomly deviate from forecasts and demonstrate model predictive control (MPC) as a solution.</p>
         </div>
         <div class="card">
-          <div class="card-title">Step C — Project Finance</div>
-          <p>Show how getting a project funded depends on more than optimized net income.</p>
+          <div class="card-title">Step 3 — Project Finance</div>
+          <p>Show how optimized income is only one part of getting a project built. We will also explore a sensivity analysis of the other financial factors in an Excel model.</p>
         </div>
       </div>
     </section>
@@ -95,9 +93,7 @@ subject to state-of-charge, power limits, and efficiency
           This page is currently a placeholder. Next up:
         </p>
         <ul>
-          <li>Write the variables + constraints explicitly (state of charge evolution)</li>
-          <li>Dynamic programming</li>
-          <li>Implement a working solver</li>
+          <li>Write the variables + constraints explicitly</li>
         </ul>
       </div>
     </section>

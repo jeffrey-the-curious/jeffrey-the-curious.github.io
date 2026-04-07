@@ -19,7 +19,7 @@
     <div class="header">
       <div>
         <h1>Repeated prisoner's dilemma</h1>
-        <p class="subtitle">Explore how cooperation emerges (or doesn't) when two players meet repeatedly</p>
+        <p class="subtitle">Explore how cooperation emerges (or doesn't) when two players meet repeatedly. This is a foundation for many concepts in industrial economics and antitrust.</p>
       </div>
       <nav class="nav">
         <a href="../../../">Home</a>
@@ -33,8 +33,7 @@
     <section class="hero">
       <h2>Two players. Each round: cooperate or defect. What strategy wins?</h2>
       <p>
-        In a single game, defection is always the rational choice — but in a repeated game,
-        the calculus changes. Pick strategies for both players and run the simulation to see
+        In a single game, defection is always the strictly dominant strategy. Why then do we see so much cooperation in life (social animals like humans) and business? Pick strategies for both players and run the simulation to see
         who accumulates more points, and why.
       </p>
     </section>
@@ -141,22 +140,22 @@
       <h3>Strategy glossary</h3>
       <dl class="glossary">
         <dt>Tit-for-tat</dt>
-        <dd>Cooperate on round 1, then copy whatever the opponent did last round. Rewards cooperation, punishes defection immediately.</dd>
+        <dd>Cooperate on round 1, then copy whatever the opponent did last round. This rewards cooperation, punishes defection immediately.</dd>
 
         <dt>Always cooperate</dt>
         <dd>Never defects. Achieves mutual benefit against cooperative opponents but is easily exploited.</dd>
 
         <dt>Always defect</dt>
-        <dd>Never cooperates. Exploits naive opponents but cannot achieve sustained mutual cooperation.</dd>
+        <dd>Never cooperates. This is the dominant finite option. It cannot be "beaten", but also cannot reach any mutual cooperation that clearly does well in the real world.</dd>
 
         <dt>Grim trigger</dt>
-        <dd>Cooperate until the opponent defects once, then defect forever. Maximally punishing — leaves no room for forgiveness.</dd>
+        <dd>Cooperate until the opponent defects once, then defect forever. This is maximally punishing, and is inflexible regarding forgiveness, random events, or signal error.</dd>
 
         <dt>Tit-for-two-tats</dt>
-        <dd>Only retaliates after two consecutive defections. More forgiving than tit-for-tat; less easily baited into punishment cycles.</dd>
+        <dd>Only retaliates after two consecutive defections. More forgiving than tit-for-tat which handles random events or signal errors better. This strategy is less easily baited into unfortunate cycles of punishment.</dd>
 
         <dt>Random (50/50)</dt>
-        <dd>Cooperates or defects with equal probability each round, ignoring history.</dd>
+        <dd>Cooperates or defects with equal probability each round. This has no memory or feelings.</dd>
       </dl>
     </section>
   </main>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prisoner's Dilemma — Round-Robin Tournament</title>
+  <title>Prisoner's Dilemma: Round-Robin Tournament</title>
   <meta name="description" content="Round-robin tournament: every strategy competes against every other under signal noise and random game length." />
   <link rel="stylesheet" href="../../../assets/css/style.css" />
   <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
@@ -21,7 +21,7 @@
     <div class="header">
       <div>
         <h1>Round-robin tournament</h1>
-        <p class="subtitle">Every strategy plays every other — 5% signal noise, games end at random</p>
+        <p class="subtitle">Every strategy plays every other — 5% signal noise, and games end at random.</p>
       </div>
       <nav class="nav">
         <a href="../../../">Home</a>
@@ -33,12 +33,12 @@
 
   <main class="container">
     <section class="hero">
-      <h2>Which strategy survives when nothing is certain — not signals, not game length?</h2>
+      <h2>How does each strategy's performance change when we introduce random signal noise and make the length of the game pseudo-random?</h2>
       <p>
-        Each pair of strategies plays one game. Every round has a 0.5% chance of being the last,
-        so the expected game length is 200 rounds but no strategy can count on that. Actions are
-        misperceived 5% of the time. Scores accumulate across all matchups — the winner is whoever
-        earns the most points in total.
+        Every possible pair of strategies plays one game. Every round has a 0.5% chance of being the last,
+        so the expected game length is 200 rounds but no strategy can count on that, which weakens the advantage of "always defect". Player actions are
+        misperceived 5% of the time. While scores accumulate across all matchups, that is only one part of the lesson. In order to maximize your score, you would choose different strategies depending on your opponent. 
+        Some of the matchups surprised me.
       </p>
     </section>
 
@@ -124,13 +124,13 @@
     <section>
       <h3>How this tournament works</h3>
       <p>
-        This is modelled after Robert Axelrod's 1980 computer tournament, which found that
-        cooperative strategies — particularly <em>tit-for-tat</em> — outperformed more aggressive
-        ones in repeated games. Here we add two complications Axelrod's original tournament did not have:
+        This simulation is based upon Robert Axelrod's 1980 computer tournament, which found that
+        cooperative strategies such as <em>tit-for-tat</em> outperformed more aggressive
+        ones in repeated games. I added two complications Axelrod's original tournament did not have:
       </p>
       <ul style="color: var(--muted); padding-left: 20px; line-height: 1.9;">
         <li><strong>Signal noise (5%):</strong> each player independently misperceives the other's action with 5% probability, which can trigger undeserved punishment spirals.</li>
-        <li><strong>Uncertain game length (0.5%/round end probability):</strong> strategies cannot defect in the "last round" because they never know when it is coming. Expected game length is 200 rounds.</li>
+        <li><strong>Uncertain game length (0.5%/round end probability):</strong> strategies cannot defect in the "last round" because they never know when it is coming. Axelrod did not include those types of strategies in his tournament, but here they should be less problematic. Expected game length is 200 rounds.</li>
       </ul>
       <p>
         Both features tend to hurt strategies that punish harshly (like grim trigger) and reward
